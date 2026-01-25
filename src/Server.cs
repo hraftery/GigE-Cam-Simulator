@@ -170,9 +170,14 @@
 
         public void Run()
         {
+            //Prevent "an existing connection was forcibly closed by the remote host" error.
+            //Ref: https://stackoverflow.com/a/39440399/3697870
+            const int SIO_UDP_CONNRESET = -1744830452;
+
             this.server = new UdpClient();
             this.server.Client.Bind(new IPEndPoint(IPAddress.Any, Server.CONTROL_PORT));
             this.server.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            this.server.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
             this.server.BeginReceive(new AsyncCallback(this.IncommingMessage), this.server);
         }
 
