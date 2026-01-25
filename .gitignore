@@ -1,0 +1,19 @@
+#
+# .gitignore to suit GigE-Cam-Simulator as a Visual Studio 2019 project.
+# Created by hand, because the GitHub one[1] seems terrible.
+# [1] https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
+#
+
+# Visual Studio cache/options directory since about 2013.
+# See: https://developercommunity.visualstudio.com/t/vs-folder/82249
+.vs/
+
+# User specific options
+*.suo
+*.user
+
+# Intermediate build files, "obj"
+[Oo]bj/
+
+# Output build files, "bin"
+[Bb]in/
