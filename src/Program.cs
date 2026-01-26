@@ -42,17 +42,28 @@ namespace GigE_Cam_Simulator
                 }
             });
 
-            var imageData = new ImageData[13];
-            for (int i = 0; i < 13; i++)
-            {
-                imageData[i] = ImageData.FormFile(Path.Combine(dataPath, "left" + i.ToString().PadLeft(2, '0') + ".jpg"));
-            }
+            //The order returned is "not guaranteed" but always seems to be alphabetical. Getting a logical ordering
+            //like used in any modern file browser doesn't look easy, or depends on Windows specific libraries.
+            //Ref: https://learn.microsoft.com/en-us/windows/win32/api/shlwapi/nf-shlwapi-strcmplogicalw
+            //So make do with alphabetical and user can just zero pad the frame number (frame01, frame02, etc.).
+            string[] imageFiles = Directory.GetFiles(dataPath, "frame*");
+            var imageData = new ImageData[imageFiles.Length];
 
-            var imageIndex = 0;
+            var numValidImages = 0;
+            foreach (var imageFile in imageFiles)
+            {
+                //Console.WriteLine("Processing: " + imageFile);
+                var theData = ImageData.FromFile(imageFile);
+                if (theData != null)
+                    imageData[numValidImages++] = theData;
+            }
+            Console.WriteLine("Loaded " + numValidImages.ToString() + " frame images.");
+
+            var imageIndex = -1;
             server.OnAcquiesceImage(() =>
             {
-                imageIndex++;
-                return imageData[imageIndex % 13];
+                imageIndex = (imageIndex+1) % numValidImages;
+                return imageData[imageIndex];
             });
 
             server.Run();

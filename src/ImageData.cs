@@ -19,7 +19,7 @@
         }
 
 
-        public static ImageData FormFile(string fileName)
+        public static ImageData? FromFile(string fileName)
         {
             byte[] bytes;
             int width = 0;
@@ -27,6 +27,9 @@
 
             using (var img = SKBitmap.Decode(fileName))
             {
+                if (img == null)
+                    return null;
+
                 var length = img.Width * img.Height;
 
                 width = img.Width;
