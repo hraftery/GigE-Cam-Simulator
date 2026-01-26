@@ -189,7 +189,8 @@
             this.server = new UdpClient();
             this.server.Client.Bind(new IPEndPoint(IPAddress.Any, Server.CONTROL_PORT));
             this.server.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            this.server.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
+            if (OperatingSystem.IsWindows()) //Only valid on Windows
+                this.server.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
             this.server.BeginReceive(new AsyncCallback(this.IncommingMessage), this.server);
         }
 

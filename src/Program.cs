@@ -7,7 +7,7 @@ namespace GigE_Cam_Simulator
     {
         static void Main(string[] args)
         {
-            var path = (args.Length > 0) ? args[0] : ".\\data\\" ;
+            var path = (args.Length > 0) ? args[0] : "data";
             var cameraXml = Path.Combine(path, "camera.xml");
             var memoryXml = Path.Combine(path, "memory.xml");
 
