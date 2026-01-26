@@ -17,14 +17,14 @@
 
         readonly RegisterMemory registers;
         readonly byte[] xml;
-        private NetworkInterface iface;
-        private UdpClient server;
+        private NetworkInterface? iface;
+        private UdpClient? server;
         private StreamClient streamClient = new StreamClient();
 
         /// <summary>
         /// Callback that is triggere when ever a new Image need to be acquire
         /// </summary>
-        private Func<ImageData> onAcquiesceImageCallback;
+        private Func<ImageData>? onAcquiesceImageCallback;
 
         public Server(string address, string camXmlFileName, RegisterConfig preSetMemory)
         {
@@ -51,7 +51,9 @@
 
             // set MAC
             var ipInfo = this.GetIpInfo();
-            var macAddress = this.iface.GetPhysicalAddress().GetAddressBytes();
+            var gatewayInfo = this.GetGatewayInfo();
+            byte[] INVALID_IP = { 0, 0, 0, 0 }; //Not sure what to use if the calls above fail. This is a placeholder.
+            var macAddress = this.iface?.GetPhysicalAddress().GetAddressBytes() ?? new byte[] { 0, 0, 0, 0, 0, 0 };
             for (var i = 0; i < 2; i++)
             {
                 this.registers.ReadByte(RegisterTypes.Device_MAC_address_High_Network_interface_0, i + 2, macAddress[i]);
@@ -62,20 +64,21 @@
             }
 
             // set IP and network addresses
-            this.registers.WriteBytes(RegisterTypes.Current_IP_address_Network_interface_0, ipInfo.Address.GetAddressBytes());
-            this.registers.WriteBytes(RegisterTypes.Current_subnet_mask_Network_interface_0, ipInfo.IPv4Mask.GetAddressBytes());
-            this.registers.WriteIntBE(RegisterTypes.Number_of_network_interfaces, 1);
-            this.registers.WriteBytes(RegisterTypes.Primary_Application_IP_address, ipInfo.Address.GetAddressBytes()); //set IP
+            this.registers.WriteBytes(RegisterTypes.Current_IP_address_Network_interface_0, ipInfo?.Address.GetAddressBytes() ?? INVALID_IP);
+            this.registers.WriteBytes(RegisterTypes.Current_subnet_mask_Network_interface_0, ipInfo?.IPv4Mask.GetAddressBytes() ?? INVALID_IP);
+            this.registers.WriteIntBE(RegisterTypes.Number_of_network_interfaces, ipInfo != null ? 1 : 0);
+            this.registers.WriteBytes(RegisterTypes.Primary_Application_IP_address, ipInfo?.Address.GetAddressBytes() ?? INVALID_IP); //set IP
+            this.registers.WriteBytes(RegisterTypes.Current_default_Gateway_Network_interface_0, gatewayInfo?.Address.GetAddressBytes() ?? INVALID_IP);
 
             foreach (var property in preSetMemory.Properties)
             {
                 if (property.IsString)
                 {
-                    this.registers.WriteString(property.Register, property.StringValue);
+                    this.registers.WriteString(property.Register, property.StringValue!);
                 }
                 else if (property.IsBits)
                 {
-                    foreach(var bitIndex in property.Bits)
+                    foreach(var bitIndex in property.Bits!)
                     {
                         this.registers.WriteBit(property.RegisterAddress, bitIndex, true);
                     }
@@ -95,6 +98,8 @@
 
         private bool IsDirectAddress(IPEndPoint endpoint)
         {
+            if (server == null || server.Client.LocalEndPoint == null)
+                return false;
             return endpoint.Address.Equals(((IPEndPoint)server.Client.LocalEndPoint).Address);
         }
 
@@ -105,8 +110,14 @@
 
         private void IncommingMessage(IAsyncResult res)
         {
-            var server = (UdpClient)res.AsyncState;
-            IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 0);
+            var server = (UdpClient?)res.AsyncState;
+            if(server == null)
+            {
+                Console.WriteLine("!!! Incoming Message with invalid AsyncState.");
+                return;
+            }
+
+            IPEndPoint? endpoint = new IPEndPoint(IPAddress.Any, 0);
             var msg = new BufferReader(server.EndReceive(res, ref endpoint));
 
             var identifier = msg.ReadByte();
@@ -120,7 +131,8 @@
             var command = (PackageCommandType)msg.ReadWordBE();
 
             // check if Endpoint fits - we only response to requests directed to us
-            if (command != PackageCommandType.DISCOVERY_CMD && IsDirectAddress(endpoint)) 
+            if (command != PackageCommandType.DISCOVERY_CMD &&
+                endpoint != null && IsDirectAddress(endpoint)) //Redundant null check to satisfy compiler.
             {
                 server.BeginReceive(new AsyncCallback(this.IncommingMessage), server);
                 return;
@@ -130,7 +142,7 @@
             var req_id = msg.ReadWordBE();
             var data = new BufferReader(msg.ReadBytes((int)length));
 
-            BufferReader result = null;
+            BufferReader? result = null;
 
             switch (command)
             {
@@ -182,9 +194,28 @@
         }
 
 
-        private UnicastIPAddressInformation GetIpInfo()
+        private UnicastIPAddressInformation? GetIpInfo()
         {
+            if (this.iface == null)
+                return null;
+
             foreach (UnicastIPAddressInformation ips in this.iface.GetIPProperties().UnicastAddresses)
+            {
+                if (ips.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    return ips;
+                }
+            }
+
+            return null;
+        }
+
+        private GatewayIPAddressInformation? GetGatewayInfo()
+        {
+            if (this.iface == null)
+                return null;
+
+            foreach (GatewayIPAddressInformation ips in this.iface.GetIPProperties().GatewayAddresses)
             {
                 if (ips.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                 {
@@ -246,7 +277,7 @@
             this.registers.AddWriteRegisterHock(address, callback);
         }
 
-        private Timer acquisitionTimer;
+        private Timer? acquisitionTimer;
 
         public void StartAcquisition(int interval)
         {
@@ -258,7 +289,7 @@
             OnAcquisitionCallback(null);
         }
 
-        private void OnAcquisitionCallback(object source)
+        private void OnAcquisitionCallback(object? source)
         {
             if (this.onAcquiesceImageCallback == null)
             {

@@ -10,13 +10,13 @@ namespace GigE_Cam_Simulator
         public RegisterTypes Register => RegisterTypeHelper.RegisterTypeByName(this.RegisterName);
         public int RegisterAddress { get; }
 
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
         public bool IsString { get; set; }
 
         public int IntValue { get; set; }
         public bool IsInt { get; set; }
 
-        public int[] Bits { get; set; }
+        public int[]? Bits { get; set; }
         public bool IsBits { get; set; }
 
 
@@ -54,9 +54,12 @@ namespace GigE_Cam_Simulator
             xmlDoc.Load(filePath);
 
             var propertyNodes = xmlDoc.SelectNodes("//property");
+            if (propertyNodes == null) //So weird. XmlNodeList doesn't have an empty version.
+                return properties;     //Resort to early exit instead. Ref: https://timbar.blogspot.com/2010/10/empty-xmlnodelist-and-avoiding-null.html
+
             foreach (XmlNode propertyNode in propertyNodes)
             {
-                XmlNode registerNode = propertyNode.SelectSingleNode("register");
+                XmlNode? registerNode = propertyNode.SelectSingleNode("register");
                 if (registerNode == null)
                 {
                     continue;
@@ -79,7 +82,7 @@ namespace GigE_Cam_Simulator
                     int[] bits = new int[bitNodes.Count];
                     for (int i = 0; i < bitNodes.Count; i++)
                     {
-                        bits[i] = int.Parse(bitNodes[i].InnerText);
+                        bits[i] = int.Parse(bitNodes[i]!.InnerText);
                     }
 
                     property.Bits = bits;

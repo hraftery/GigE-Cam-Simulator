@@ -52,6 +52,7 @@
 
 
             current_subnet_mask_buf = registers.ReadBytes(RegisterTypes.Current_subnet_mask_Network_interface_0);
+            current_gateway_buf = registers.ReadBytes(RegisterTypes.Current_default_Gateway_Network_interface_0);
 
             manufacturer_name = registers.ReadString(RegisterTypes.Manufacturer_name);
             model_name = registers.ReadString(RegisterTypes.Model_name);

@@ -87,7 +87,7 @@ namespace GigE_Cam_Simulator
             var enumValues = Enum.GetValues(typeof(RegisterTypes));
             foreach (var enumValue in enumValues)
             {
-                nameLookup.Add(enumValue.ToString(), (RegisterTypes)enumValue);
+                nameLookup.Add(enumValue.ToString() ?? "", (RegisterTypes)enumValue); //Redundant null check to satisfy compiler.
             }
             return nameLookup;
         }

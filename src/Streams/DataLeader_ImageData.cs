@@ -169,7 +169,7 @@
             this.SizeY = sizeY;
         }
 
-        public new BufferReader ToBuffer()
+        public BufferReader ToBuffer()
         {
             var b = base.ToBuffer(8 * 4);
 
