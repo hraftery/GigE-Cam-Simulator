@@ -7,9 +7,9 @@ namespace GigE_Cam_Simulator
     {
         static void Main(string[] args)
         {
-            var path = (args.Length > 0) ? args[0] : "data";
-            var cameraXml = Path.Combine(path, "camera.xml");
-            var memoryXml = Path.Combine(path, "memory.xml");
+            var dataPath = (args.Length > 0) ? args[0] : "data";
+            var cameraXml = Path.Combine(dataPath, "camera.xml");
+            var memoryXml = Path.Combine(dataPath, "memory.xml");
 
             var preSetMemory = new RegisterConfig(memoryXml);
 
@@ -45,7 +45,7 @@ namespace GigE_Cam_Simulator
             var imageData = new ImageData[13];
             for (int i = 0; i < 13; i++)
             {
-                imageData[i] = ImageData.FormFile(Path.Combine(path, "left" + i.ToString().PadLeft(2, '0') + ".jpg"));
+                imageData[i] = ImageData.FormFile(Path.Combine(dataPath, "left" + i.ToString().PadLeft(2, '0') + ".jpg"));
             }
 
             var imageIndex = 0;
