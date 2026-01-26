@@ -35,31 +35,27 @@
         public DiscoveryAck(uint req_id, RegisterMemory registers) :
             base(req_id, GvcpPacketType.GVCP_PACKET_TYPE_ACK, ArvGvcpCommand.GVCP_COMMAND_DISCOVERY_ACK)
         {
-            VersionMajor = 3;
-            VersionMinor = 1;
+            VersionMajor            = 3;
+            VersionMinor            = 1;
 
-            DeviceMode = registers.ReadIntBE(RegisterTypes.Device_Mode);
+            DeviceMode              = registers.ReadIntBE(RegisterTypes.Device_Mode);
 
-            MacAddressHigh = registers.ReadBytes(RegisterTypes.Device_MAC_address_High_Network_interface_0);
-            MacAddressLow = registers.ReadBytes(RegisterTypes.Device_MAC_address_Low_Network_interface_0);
+            MacAddressHigh          = registers.ReadBytes(RegisterTypes.Device_MAC_address_High_Network_interface_0);
+            MacAddressLow           = registers.ReadBytes(RegisterTypes.Device_MAC_address_Low_Network_interface_0);
 
+            ip_config_options       = 0;
+            ip_config_current       = 0;
 
-            ip_config_options = 0;
-            ip_config_current = 0;
-
-
-            current_ip_buf = registers.ReadBytes(RegisterTypes.Current_IP_address_Network_interface_0);
-
-
+            current_ip_buf          = registers.ReadBytes(RegisterTypes.Current_IP_address_Network_interface_0);
             current_subnet_mask_buf = registers.ReadBytes(RegisterTypes.Current_subnet_mask_Network_interface_0);
-            current_gateway_buf = registers.ReadBytes(RegisterTypes.Current_default_Gateway_Network_interface_0);
+            current_gateway_buf     = registers.ReadBytes(RegisterTypes.Current_default_Gateway_Network_interface_0);
 
-            manufacturer_name = registers.ReadString(RegisterTypes.Manufacturer_name);
-            model_name = registers.ReadString(RegisterTypes.Model_name);
-            device_version = registers.ReadString(RegisterTypes.Device_version);
-            manufacturer_info = registers.ReadString(RegisterTypes.Manufacturer_specific_information);
-            serial_number = registers.ReadString(RegisterTypes.Serial_number);
-            user_defined_name = registers.ReadString(RegisterTypes.User_defined_name);
+            manufacturer_name       = registers.ReadString(RegisterTypes.Manufacturer_name);
+            model_name              = registers.ReadString(RegisterTypes.Model_name);
+            device_version          = registers.ReadString(RegisterTypes.Device_version);
+            manufacturer_info       = registers.ReadString(RegisterTypes.Manufacturer_specific_information);
+            serial_number           = registers.ReadString(RegisterTypes.Serial_number);
+            user_defined_name       = registers.ReadString(RegisterTypes.User_defined_name);
         }
 
         public BufferReader ToBuffer()
