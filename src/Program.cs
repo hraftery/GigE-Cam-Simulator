@@ -1,12 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace GigE_Cam_Simulator
 {
     internal class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
             var dataPath = (args.Length > 0) ? args[0] : "data";
             var cameraXml = Path.Combine(dataPath, "camera.xml");
@@ -61,16 +60,11 @@ namespace GigE_Cam_Simulator
             Console.WriteLine("Camera Server is running...");
 
             if (!Console.IsInputRedirected)
-            {
-                Console.WriteLine("Reading line...");
                 Console.ReadLine();
-            }
             else
-            {
                 //When running in docker without an interactive TTY attached (ie. without "-it" flags),
                 //there is no stdin to wait on. So instead, wait until we're killed.
-                await System.Threading.Tasks.Task.Delay(System.Threading.Timeout.InfiniteTimeSpan);
-            }
+                System.Threading.Thread.Sleep(System.Threading.Timeout.InfiniteTimeSpan);
 
             Console.WriteLine("Exiting...");
         }
