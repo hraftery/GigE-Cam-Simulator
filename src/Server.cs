@@ -70,6 +70,21 @@
             this.registers.WriteBytes(RegisterTypes.Primary_Application_IP_address, ipInfo?.Address.GetAddressBytes() ?? INVALID_IP); //set IP
             this.registers.WriteBytes(RegisterTypes.Current_default_Gateway_Network_interface_0, gatewayInfo?.Address.GetAddressBytes() ?? INVALID_IP);
 
+            // Store the xml device description file in device memory somewhere, so it can be read out over
+            // the wire with READMEM by default. The URLs can also be specified in memory.xml, which is
+            // loaded into preSetMemory and will overwrite these defaults. That can be useful to provide
+            // an Internet URL or local file path, instead of relying on device memory. Note that the URLs
+            // can also be specified in a manifest table instead, in which case these URLs are ignored.
+            // The file can be large (eg. 600kB - ZIP support not implemented), so pick somewhere with clear air.
+            const int XML_FILE_ADDRESS = 0x01000000; //Spec says address must be aligned to 32-bit boundary.
+            this.registers.WriteString(RegisterTypes.XML_Device_Description_File_First_URL,
+                "Local:camera.xml;" + ToHexString(XML_FILE_ADDRESS) + ";" + ToHexString(this.xml.Length));
+            // If the first fails, the second is used. But we have no other option! So just try the same.
+            this.registers.WriteString(RegisterTypes.XML_Device_Description_File_Second_URL,
+                "Local:camera.xml;" + ToHexString(XML_FILE_ADDRESS) + ";" + ToHexString(this.xml.Length));
+            this.registers.WriteBytes(XML_FILE_ADDRESS, this.xml); //Store the file.
+
+            //Finally, write memory.xml values over the top.
             foreach (var property in preSetMemory.Properties)
             {
                 if (property.IsString)
@@ -88,11 +103,6 @@
                     this.registers.WriteIntBE(property.RegisterAddress, property.IntValue);
                 }
             }
-
-            // xml manifest / description
-            var manifestFileaddress = 0x1C400;
-            this.registers.WriteString(RegisterTypes.XML_Device_Description_File_First_URL, "Local:camera.xml;" + ToHexString(manifestFileaddress) + ";" + ToHexString(this.xml.Length));
-            this.registers.WriteBytes(manifestFileaddress, this.xml);
         }
 
 
