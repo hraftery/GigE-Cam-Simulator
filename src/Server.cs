@@ -90,7 +90,7 @@
             }
 
             // xml manifest / description
-            var manifestFileaddress = 0x1C400;
+            var manifestFileaddress = 0x1C400; //Note there is nothing to guarantee this address is not otherwise in use by the camera. Check the device config file to be sure.
             this.registers.WriteString(RegisterTypes.XML_Device_Description_File_First_URL, "Local:camera.xml;" + ToHexString(manifestFileaddress) + ";" + ToHexString(this.xml.Length));
             this.registers.WriteBytes(manifestFileaddress, this.xml);
         }
