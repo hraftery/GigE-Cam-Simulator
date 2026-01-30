@@ -22,14 +22,36 @@ namespace GigE_Cam_Simulator
 
         public PropertyItem(string registerNameOrAddress)
         {
-            if (registerNameOrAddress.Substring(0, 2) == "0x")
+            this.RegisterName = registerNameOrAddress;
+
+            if (registerNameOrAddress.StartsWith("0x"))
             {
-                this.RegisterName = registerNameOrAddress;
-                this.RegisterAddress = int.Parse(registerNameOrAddress.Substring(2), System.Globalization.NumberStyles.HexNumber);
+                uint addr = uint.Parse(registerNameOrAddress[2..], System.Globalization.NumberStyles.HexNumber);
+                //It was expected that addr would be a simple offset into the register memory space. But in the Teledyne
+                //Linea camera config at least, register addresses can be very high. Specifically, they are in ranges:
+                //  0x0000     - 0x9FFF     : Reserved by the spec for "Bootstrap Registers". Includes "manifest table" @ 0x9000.
+                //  0x08000000 - 0x08000053 : "User set " registers
+                //  0x08EFB000 - 0x08EFF003 : File access resigters
+                //  0x08F00000 - variable   : File access buffer
+                //  0x10000020 - 0x100000FF : Transfer registers
+                //  0x1200000C - 0x120003FF : Various
+                //  0x18000010 - 0x18009383 : Device functions
+                //  0x20000040 - 0x20003A63 : Acquisition stuff
+                //  0x90000000              : pFFCCorrectionSingleOffsetReg
+                //  0xA0000000              : pFFCCorrectionSingleGainReg
+                //  0xB0000000              : pLUTValue_Reg
+                //
+                //Currently there's 68MB allocated for registers so addresses should be < 0x04400000.
+                //Here we attempt to compact the address space without conflict, but without knowing what addresses
+                //other cameras use it's very hard to make it general.
+                if ((addr & 0xFF0000) == 0)
+                    addr = ((addr & 0xFF000000) >> 16) | (addr & 0xFFFF); //Turn 0x12005678 into 0x00125678.
+                else
+                    addr -= 0x5000000;                                    //Turn 0x08FF5678 into 0x03FF5678.
+                this.RegisterAddress = (int)addr;
             }
             else
             {
-                this.RegisterName = registerNameOrAddress;
                 this.RegisterAddress = RegisterTypeHelper.RegisterByType(RegisterTypeHelper.RegisterTypeByName(registerNameOrAddress)).Address;
             }
             
