@@ -93,7 +93,10 @@ namespace GigE_Cam_Simulator
                 var intNodes = propertyNode.SelectSingleNode("int");
                 if (intNodes != null )
                 {
-                    property.IntValue = int.Parse(intNodes.InnerText);
+                    if (intNodes.InnerText.StartsWith("0x"))
+                        property.IntValue = int.Parse(intNodes.InnerText[2..], System.Globalization.NumberStyles.HexNumber);
+                    else
+                        property.IntValue = int.Parse(intNodes.InnerText);
                     property.IsInt = true;
                 }
 
