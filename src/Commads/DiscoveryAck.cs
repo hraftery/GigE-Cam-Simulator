@@ -35,16 +35,17 @@
         public DiscoveryAck(uint req_id, RegisterMemory registers) :
             base(req_id, GvcpPacketType.GVCP_PACKET_TYPE_ACK, ArvGvcpCommand.GVCP_COMMAND_DISCOVERY_ACK)
         {
-            VersionMajor            = 3;
-            VersionMinor            = 1;
+            uint version = registers.ReadIntBE(RegisterTypes.Version);
+            VersionMajor            = (version >> 16) & 0xFFFF; //The version register stores major/minor in the same way the
+            VersionMinor            = (version >>  0) & 0xFFFF; //ack writes it, but we split it apart for clarity anyway.
 
             DeviceMode              = registers.ReadIntBE(RegisterTypes.Device_Mode);
 
             MacAddressHigh          = registers.ReadBytes(RegisterTypes.Device_MAC_address_High_Network_interface_0);
             MacAddressLow           = registers.ReadBytes(RegisterTypes.Device_MAC_address_Low_Network_interface_0);
 
-            ip_config_options       = 0;
-            ip_config_current       = 0;
+            ip_config_options       = registers.ReadIntBE(RegisterTypes.Network_interface_capability_0);
+            ip_config_current       = registers.ReadIntBE(RegisterTypes.Network_interface_configuration_0);
 
             current_ip_buf          = registers.ReadBytes(RegisterTypes.Current_IP_address_Network_interface_0);
             current_subnet_mask_buf = registers.ReadBytes(RegisterTypes.Current_subnet_mask_Network_interface_0);
