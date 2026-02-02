@@ -27,68 +27,50 @@
 
         public void WriteWordBE(uint value)
         {
-            this.buffer[this.bufferPos] = (byte)((value >> 8) & 0xFF);
-            this.bufferPos++;
-            this.buffer[this.bufferPos] = (byte)(value & 0xFF);
-            this.bufferPos++;
+            this.buffer[this.bufferPos++] = (byte)((value >> 8) & 0xFF);
+            this.buffer[this.bufferPos++] = (byte)(value & 0xFF);
         }
 
         public uint ReadWordBE()
         {
-            uint b1 = this.buffer[this.bufferPos];
-            this.bufferPos++;
-            uint b2 = this.buffer[this.bufferPos];
-            this.bufferPos++;
+            uint b1 = this.buffer[this.bufferPos++];
+            uint b2 = this.buffer[this.bufferPos++];
 
             return (b1 << 8 | b2);
         }
 
         public void SetIntBE(int offset, int value)
         {
-            this.buffer[offset] = (byte)((value >> 24) & 0xFF);
-            offset++;
-            this.buffer[offset] = (byte)((value >> 16) & 0xFF);
-            offset++;
-            this.buffer[offset] = (byte)((value >> 8) & 0xFF);
-            offset++;
-            this.buffer[offset] = (byte)((value >> 0) & 0xFF);
+            this.buffer[offset++] = (byte)((value >> 24) & 0xFF);
+            this.buffer[offset++] = (byte)((value >> 16) & 0xFF);
+            this.buffer[offset++] = (byte)((value >>  8) & 0xFF);
+            this.buffer[offset]   = (byte)((value >>  0) & 0xFF);
         }
 
         public void WriteIntBE(uint value)
         {
-            this.buffer[this.bufferPos] = (byte)((value >> 24) & 0xFF);
-            this.bufferPos++;
-            this.buffer[this.bufferPos] = (byte)((value >> 16) & 0xFF);
-            this.bufferPos++;
-            this.buffer[this.bufferPos] = (byte)((value >> 8) & 0xFF);
-            this.bufferPos++;
-            this.buffer[this.bufferPos] = (byte)((value >> 0) & 0xFF);
-            this.bufferPos++;
+            this.buffer[this.bufferPos++] = (byte)((value >> 24) & 0xFF);
+            this.buffer[this.bufferPos++] = (byte)((value >> 16) & 0xFF);
+            this.buffer[this.bufferPos++] = (byte)((value >>  8) & 0xFF);
+            this.buffer[this.bufferPos++] = (byte)((value >>  0) & 0xFF);
         }
 
         public uint ReadIntBE()
         {
-            uint b1 = this.buffer[this.bufferPos];
-            this.bufferPos++;
-            uint b2 = this.buffer[this.bufferPos];
-            this.bufferPos++;
-            uint b3 = this.buffer[this.bufferPos];
-            this.bufferPos++;
-            uint b4 = this.buffer[this.bufferPos];
-            this.bufferPos++;
+            uint b1 = this.buffer[this.bufferPos++];
+            uint b2 = this.buffer[this.bufferPos++];
+            uint b3 = this.buffer[this.bufferPos++];
+            uint b4 = this.buffer[this.bufferPos++];
 
             return (b1 << 24 | b2 << 16 | b3 << 8 | b4);
         }
 
         public uint GetIntBE(int address)
         {
-            uint b1 = this.buffer[address];
-            address++;
-            uint b2 = this.buffer[address];
-            address++;
-            uint b3 = this.buffer[address];
-            address++;
-            uint b4 = this.buffer[address];
+            uint b1 = this.buffer[address++];
+            uint b2 = this.buffer[address++];
+            uint b3 = this.buffer[address++];
+            uint b4 = this.buffer[address++];
 
             return (b1 << 24 | b2 << 16 | b3 << 8 | b4);
         }
