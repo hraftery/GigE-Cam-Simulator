@@ -15,7 +15,7 @@
             return data.GetByte(address);
         }
 
-        public void ReadByte(RegisterTypes register, int index, byte value)
+        public void WriteByte(RegisterTypes register, int index, byte value)
         {
             var address = RegisterTypeHelper.RegisterByType(register).Address + index;
             data.SetByte(address, value);
@@ -87,10 +87,7 @@
 
         public void WriteBit(RegisterTypes register, int index, bool value)
         {
-            var address = RegisterTypeHelper.RegisterByType(register).Address;
-            this.data.SetBit(address, index, value);
-
-            this.TriggerWriteHock(address);
+            WriteBit(RegisterTypeHelper.RegisterByType(register).Address, index, value);
         }
 
         public void WriteString(RegisterTypes register, string value)
