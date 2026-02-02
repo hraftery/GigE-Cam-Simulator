@@ -163,7 +163,7 @@
             return s.PadRight(36);
         }
 
-        private void IncommingMessage(IAsyncResult res)
+        private void IncomingMessage(IAsyncResult res)
         {
             var server = (UdpClient?)res.AsyncState;
             if(server == null)
@@ -176,20 +176,20 @@
             var msg = new BufferReader(server.EndReceive(res, ref endpoint));
 
             var identifier = msg.ReadByte();
-            if (identifier != 0x42)
+            if (identifier != 0x42) //Must start with the GVCP message key value
             {
-                server.BeginReceive(new AsyncCallback(this.IncommingMessage), server);
+                server.BeginReceive(new AsyncCallback(this.IncomingMessage), server);
                 return;
             }
 
             var flags = msg.ReadByte();
             var command = (PackageCommandType)msg.ReadWordBE();
 
-            // check if Endpoint fits - we only response to requests directed to us
+            // check if Endpoint fits - we only respond to discovery commands, or requests directed to us
             if (command != PackageCommandType.DISCOVERY_CMD &&
                 endpoint != null && IsDirectAddress(endpoint)) //Redundant null check to satisfy compiler.
             {
-                server.BeginReceive(new AsyncCallback(this.IncommingMessage), server);
+                server.BeginReceive(new AsyncCallback(this.IncomingMessage), server);
                 return;
             }
 
@@ -227,7 +227,7 @@
                     break;
             }
 
-            server.BeginReceive(new AsyncCallback(this.IncommingMessage), server);
+            server.BeginReceive(new AsyncCallback(this.IncomingMessage), server);
 
             if (result != null)
             {
@@ -246,7 +246,7 @@
             this.server.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             if (OperatingSystem.IsWindows()) //Only valid on Windows
                 this.server.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
-            this.server.BeginReceive(new AsyncCallback(this.IncommingMessage), this.server);
+            this.server.BeginReceive(new AsyncCallback(this.IncomingMessage), this.server);
         }
 
 
