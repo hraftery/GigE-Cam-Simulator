@@ -42,12 +42,16 @@
 
         private void InitRegisters(RegisterConfig preSetMemory)
         {
-            this.registers.WriteIntBE(RegisterTypes.Version, 0x0100);
+            registers.WriteIntBE(RegisterTypes.Version, 0x00020002); //2.2
 
-            this.registers.WriteBit(RegisterTypes.Device_Mode, 0, true);
-            this.registers.WriteBit(RegisterTypes.Device_Mode, 1, true);
-            this.registers.ReadByte(RegisterTypes.Device_Mode, 0, 1);
-            this.registers.ReadByte(RegisterTypes.Device_Mode, 2, 1);
+            registers.WriteByte(RegisterTypes.Device_Mode, 0, 0b00000001);
+            //                                                  |||||||+---- 1: Big-endian device
+            //                                                  ||||+++----- 0: Transmitter
+            //                                                  ||++-------- 0: Reserved
+            //                                                  ++---------- 0: Single Link Configuration
+            registers.WriteByte(RegisterTypes.Device_Mode, 1, 0); //Reserved
+            registers.WriteByte(RegisterTypes.Device_Mode, 2, 0); //Reserved
+            registers.WriteByte(RegisterTypes.Device_Mode, 3, 2); //ASCII character set
 
             // set MAC
             var ipInfo = this.GetIpInfo();
@@ -56,19 +60,60 @@
             var macAddress = this.iface?.GetPhysicalAddress().GetAddressBytes() ?? new byte[] { 0, 0, 0, 0, 0, 0 };
             for (var i = 0; i < 2; i++)
             {
-                this.registers.ReadByte(RegisterTypes.Device_MAC_address_High_Network_interface_0, i + 2, macAddress[i]);
+                registers.WriteByte(RegisterTypes.Device_MAC_address_High_Network_interface_0, i + 2, macAddress[i]);
             }
             for (var i = 2; i < 6; i++)
             {
-                this.registers.ReadByte(RegisterTypes.Device_MAC_address_Low_Network_interface_0, i - 2, macAddress[i]);
+                registers.WriteByte(RegisterTypes.Device_MAC_address_Low_Network_interface_0, i - 2, macAddress[i]);
             }
 
+            //Set network capability. PAUSE is assumed unsupported. DHCP is assumed on.
+            registers.WriteBit(RegisterTypes.Network_interface_capability_0,  0, false); //PAUSE reception not supported
+            registers.WriteBit(RegisterTypes.Network_interface_capability_0,  1, false); //PAUSE generation not supported
+            registers.WriteBit(RegisterTypes.Network_interface_capability_0, 29, true);  //Link-local address always supported
+            registers.WriteBit(RegisterTypes.Network_interface_capability_0, 30, true);  //DHCP always supported
+            registers.WriteBit(RegisterTypes.Network_interface_capability_0, 31, false); //Persistent IP is not supported
+
+            registers.WriteBit(RegisterTypes.Network_interface_configuration_0,  0, false); //Disable PAUSE reception
+            registers.WriteBit(RegisterTypes.Network_interface_configuration_0,  1, false); //Disable PAUSE generation
+            registers.WriteBit(RegisterTypes.Network_interface_configuration_0, 29, true);  //Link-local address is activated (always 1)
+            registers.WriteBit(RegisterTypes.Network_interface_configuration_0, 30, true);  //DHCP is activated (default 1)
+            registers.WriteBit(RegisterTypes.Network_interface_configuration_0, 31, false); //Persistent IP is not activated (default 0)
+
             // set IP and network addresses
-            this.registers.WriteBytes(RegisterTypes.Current_IP_address_Network_interface_0, ipInfo?.Address.GetAddressBytes() ?? INVALID_IP);
-            this.registers.WriteBytes(RegisterTypes.Current_subnet_mask_Network_interface_0, ipInfo?.IPv4Mask.GetAddressBytes() ?? INVALID_IP);
-            this.registers.WriteIntBE(RegisterTypes.Number_of_network_interfaces, ipInfo != null ? 1 : 0);
-            this.registers.WriteBytes(RegisterTypes.Primary_Application_IP_address, ipInfo?.Address.GetAddressBytes() ?? INVALID_IP); //set IP
-            this.registers.WriteBytes(RegisterTypes.Current_default_Gateway_Network_interface_0, gatewayInfo?.Address.GetAddressBytes() ?? INVALID_IP);
+            registers.WriteBytes(RegisterTypes.Current_IP_address_Network_interface_0, ipInfo?.Address.GetAddressBytes() ?? INVALID_IP);
+            registers.WriteBytes(RegisterTypes.Current_subnet_mask_Network_interface_0, ipInfo?.IPv4Mask.GetAddressBytes() ?? INVALID_IP);
+            registers.WriteIntBE(RegisterTypes.Number_of_network_interfaces, ipInfo != null ? 1 : 0);
+            registers.WriteBytes(RegisterTypes.Primary_Application_IP_address, ipInfo?.Address.GetAddressBytes() ?? INVALID_IP); //set IP
+            registers.WriteBytes(RegisterTypes.Current_default_Gateway_Network_interface_0, gatewayInfo?.Address.GetAddressBytes() ?? INVALID_IP);
+
+            // Message capabilities
+            registers.WriteByte(RegisterTypes.GVSP_Capability, 0, 0); //SCSPx, legacy block id, SCMBSx and SCEBAx all not supported.
+            registers.WriteByte(RegisterTypes.Message_channel_Capability, 0, 0); //MCSP, MCCFG and MCEC all not supported
+            //GVCP capability expected to be provided in memory.xml, so nothing done here.
+
+            // Timing options
+            registers.WriteIntBE(RegisterTypes.Heartbeat_timeout, 0x0BB8); //3000ms = 0x0BB8 is factory default
+            //Timestamp support is optional, so leave all as zeros for not supported.
+            registers.WriteIntBE(RegisterTypes.Pending_Timeout, 5000); //Worst case GVCP cmd execution time. No idea. 5s sounds like enough.
+
+            //Control switchover and optional GVSP features not supported.
+
+            // Physical Link
+            registers.WriteByte(RegisterTypes.Physical_Link_Capability, 3, 0b00000001);
+            //                                                               |||||||+---- 1: Single Link supported
+            //                                                               ||||||+----- 0: Multiple Link not supported
+            //                                                               |||||+------ 0: Static LAG not supported
+            //                                                               ||||+------- 0: Dynamic LAG not supported
+            //                                                               ++++-------- 0: Reserved
+            registers.WriteByte(RegisterTypes.Physical_Link_Configuration, 3, 0); //0: Single Link configuration
+
+            //IEEE 1588 registers are optional. Control channel not supported. Primary Application and
+            //Message channel registers are optional. Stream Channel Port and Dest Address are set by
+            //the application. Stream Channel Size is set in memory.xml or the application. Stream
+            //Channel delay is ignored because timestamps are disabled. Other Stream Channel registers
+            //are optional. Action Group registers are optional. Skip all related registers.
+
 
             // Store the xml device description file in device memory somewhere, so it can be read out over
             // the wire with READMEM by default. The URLs can also be specified in memory.xml, which is
@@ -77,30 +122,30 @@
             // can also be specified in a manifest table instead, in which case these URLs are ignored.
             // The file can be large (eg. 600kB - ZIP support not implemented), so pick somewhere with clear air.
             const int XML_FILE_ADDRESS = 0x01000000; //Spec says address must be aligned to 32-bit boundary.
-            this.registers.WriteString(RegisterTypes.XML_Device_Description_File_First_URL,
+            registers.WriteString(RegisterTypes.XML_Device_Description_File_First_URL,
                 "Local:camera.xml;" + ToHexString(XML_FILE_ADDRESS) + ";" + ToHexString(this.xml.Length));
             // If the first fails, the second is used. But we have no other option! So just try the same.
-            this.registers.WriteString(RegisterTypes.XML_Device_Description_File_Second_URL,
+            registers.WriteString(RegisterTypes.XML_Device_Description_File_Second_URL,
                 "Local:camera.xml;" + ToHexString(XML_FILE_ADDRESS) + ";" + ToHexString(this.xml.Length));
-            this.registers.WriteBytes(XML_FILE_ADDRESS, this.xml); //Store the file.
+            registers.WriteBytes(XML_FILE_ADDRESS, this.xml); //Store the file.
 
             //Finally, write memory.xml values over the top.
             foreach (var property in preSetMemory.Properties)
             {
                 if (property.IsString)
                 {
-                    this.registers.WriteString(property.Register, property.StringValue!);
+                    registers.WriteString(property.Register, property.StringValue!);
                 }
                 else if (property.IsBits)
                 {
                     foreach(var bitIndex in property.Bits!)
                     {
-                        this.registers.WriteBit(property.RegisterAddress, bitIndex, true);
+                        registers.WriteBit(property.RegisterAddress, bitIndex, true);
                     }
                 }
                 else if (property.IsInt)
                 {
-                    this.registers.WriteIntBE(property.RegisterAddress, property.IntValue);
+                    registers.WriteIntBE(property.RegisterAddress, property.IntValue);
                 }
             }
         }
