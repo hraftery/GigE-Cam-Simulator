@@ -13,12 +13,14 @@ namespace GigE_Cam_Simulator.Commads
         public ReadRegAck(uint req_id, RegisterMemory registers, BufferReader message) :
             base(req_id, GvcpPacketType.GVCP_PACKET_TYPE_ACK, ArvGvcpCommand.GVCP_COMMAND_READ_REGISTER_ACK)
         {
+            //The READREG command contains one or more 4-byte register addresses, and we must respond with
+            //a 4-byte register value for each address. So the result is the same size as the request.
             var resultData = new BufferReader(message.Length);
             while (!message.Eof)
             {
                 var address = (int)message.ReadIntBE();
                 var register = RegisterTypeHelper.RegisterByAddress(address);
-                Console.WriteLine("    read: " + address.ToString("x") + " --> " + register.TypeName + " = " + registers.ReadIntBE(address));
+                Console.WriteLine("  read:  0x" + address.ToString("X4") + " (" + register.TypeName + ") = " + registers.ReadIntBE(address));
 
                 var data = registers.ReadBytes(address, 4);
                 resultData.WriteBytes(data, 4);

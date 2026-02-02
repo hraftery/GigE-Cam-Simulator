@@ -22,7 +22,7 @@ namespace GigE_Cam_Simulator.Commads
                 var data = message.ReadBytes(4);
                 var register = RegisterTypeHelper.RegisterByAddress(address);
 
-                Console.WriteLine("    write: " + address.ToString("x") + " --> " + register.TypeName + " = " + string.Join(", ", data));
+                Console.WriteLine("  write: 0x" + address.ToString("X4") + " (" + register.TypeName + ") = " + string.Join(", ", data));
 
                 registers.WriteBytes(address, data);
 

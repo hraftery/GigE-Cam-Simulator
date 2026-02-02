@@ -26,7 +26,7 @@ namespace GigE_Cam_Simulator.Commads
             this.address = (uint)address;
             var register = RegisterTypeHelper.RegisterByAddress(address);
 
-            Console.WriteLine("    read: " + address.ToString("x") + " --> " + register.TypeName + " = " + ByteToString(resultData));
+            Console.WriteLine("  read:  0x" + address.ToString("X4") + " (" + register.TypeName + ") = " + ByteToString(resultData));
         }
 
         public BufferReader ToBuffer()
