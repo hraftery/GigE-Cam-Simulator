@@ -7,34 +7,34 @@
     public class RegisterMemory
     {
         private BufferReader data;
-        Dictionary<int, Action<RegisterMemory>> writeRegisterHock = new Dictionary<int, Action<RegisterMemory>>();
+        Dictionary<uint, Action<RegisterMemory>> writeRegisterHock = new Dictionary<uint, Action<RegisterMemory>>();
 
-        public byte ReadByte(RegisterTypes register, int index)
+        public bool ReadBit(eBootstrapRegister register, uint index)
         {
             var address = BootstrapRegisterHelper.RegisterByEnum(register).Address;
             return data.GetByte(address);
         }
 
-        public void WriteByte(RegisterTypes register, int index, byte value)
+        public void WriteByte(eBootstrapRegister register, uint index, byte value)
         {
             var address = BootstrapRegisterHelper.RegisterByEnum(register).Address + index;
             data.SetByte(address, value);
             this.TriggerWriteHock(address);
         }
 
-        public void WriteBytes(int address, byte[] values)
+        public void WriteBytes(uint address, byte[] values)
         {
             data.SetBytes(address, values, 0, values.Length);
             this.TriggerWriteHock(address);
         }
 
-        public void WriteIntBE(int address, int value)
+        public void WriteIntBE(uint address, int value)
         { 
             data.SetIntBE(address, value);
             this.TriggerWriteHock(address);
         }
 
-        public uint ReadIntBE(int address)
+        public uint ReadIntBE(uint address)
         {
             return data.GetIntBE(address);
         }
@@ -67,25 +67,25 @@
             var reg = BootstrapRegisterHelper.RegisterByEnum(register);
             var address = reg.Address;
 
-            var l = Math.Min(values.Length, reg.Length);
+            var l = (uint)Math.Min(values.Length, reg.Length);
 
             // fill in data
             this.data.SetBytes(address, values, 0, l);
             
             // clear buffer
-            this.data.SetNull(address + l, l - reg.Length);
+            this.data.SetNull(address + l, reg.Length - l);
 
             this.TriggerWriteHock(address);
         }
 
-        public void WriteBit(int address, int index, bool value)
+        public void WriteBit(uint address, uint index, bool value)
         {
             this.data.SetBit(address, index, value);
 
             this.TriggerWriteHock(address);
         }
 
-        public void WriteBit(eBootstrapRegister register, int index, bool value)
+        public void WriteBit(eBootstrapRegister register, uint index, bool value)
         {
             WriteBit(BootstrapRegisterHelper.RegisterByEnum(register).Address, index, value);
         }
@@ -111,12 +111,12 @@
         /// <summary>
         /// Register a callback that is triggered when data is written to a given address
         /// </summary>
-        public void AddWriteRegisterHock(int address, Action<RegisterMemory> callback)
+        public void AddWriteRegisterHock(uint address, Action<RegisterMemory> callback)
         {
             this.writeRegisterHock.Add(address, callback);
         }
 
-        private void TriggerWriteHock(int address)
+        private void TriggerWriteHock(uint address)
         {
             if (this.writeRegisterHock.TryGetValue(address, out var callback))
             {

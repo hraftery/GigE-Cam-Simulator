@@ -135,11 +135,11 @@ namespace GigE_Cam_Simulator
     public class BootstrapRegister
     {
         public eBootstrapRegister RegEnum { get; }
-        public int Address { get; }
+        public uint Address { get; }
 
-        public int Length { get; }
+        public uint Length { get; }
 
-        public BootstrapRegister(eBootstrapRegister reg, int address, int length)
+        public BootstrapRegister(eBootstrapRegister reg, uint address, uint length)
         {
             this.RegEnum = reg;
             this.Address = address;
@@ -157,7 +157,7 @@ namespace GigE_Cam_Simulator
         private static Dictionary<string, eBootstrapRegister> nameLookup = CreateNameLookup();
 
         private static BootstrapRegister[] registers = CreateRegisterInfoList();
-        private static Dictionary<int, BootstrapRegister> addressLookup = CreateAddressLookup(registers);
+        private static Dictionary<uint, BootstrapRegister> addressLookup = CreateAddressLookup(registers);
 
         public static BootstrapRegister RegisterByEnum(eBootstrapRegister reg)
         {
@@ -170,7 +170,7 @@ namespace GigE_Cam_Simulator
             return registers[index];
         }
 
-        public static BootstrapRegister RegisterByAddress(int registerAddress)
+        public static BootstrapRegister RegisterByAddress(uint registerAddress)
         {
             if (addressLookup.TryGetValue(registerAddress, out var info))
             {
@@ -194,9 +194,9 @@ namespace GigE_Cam_Simulator
             return eBootstrapRegister.Unknown;
 
         }
-        private static Dictionary<int, BootstrapRegister> CreateAddressLookup(BootstrapRegister[] registers)
+        private static Dictionary<uint, BootstrapRegister> CreateAddressLookup(BootstrapRegister[] registers)
         {
-            var lookup = new Dictionary<int, BootstrapRegister>();
+            var lookup = new Dictionary<uint, BootstrapRegister>();
 
             foreach (var info in registers)
             {

@@ -115,9 +115,9 @@ namespace GigE_Cam_Simulator.Streams
             PacketFormat = format;
         }
 
-        public BufferReader CreateBuffer(int length)
+        public BufferReader CreateBuffer(uint length)
         {
-            var b = new BufferReader(length + 4 * 2);
+            var b = new BufferReader((int)length + 4 * 2);
 
             b.WriteWordBE(Status);
             b.WriteWordBE(BlockId);

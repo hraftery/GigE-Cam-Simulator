@@ -15,7 +15,7 @@
         {
         }
 
-        public BufferReader ToBuffer(byte[] payload, int payloadOffset, int length)
+        public BufferReader ToBuffer(byte[] payload, int payloadOffset, uint length)
         {
             var b = CreateBuffer(length);
 

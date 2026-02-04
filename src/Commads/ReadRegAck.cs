@@ -18,7 +18,7 @@ namespace GigE_Cam_Simulator.Commads
             var resultData = new BufferReader(message.Length);
             while (!message.Eof)
             {
-                var address = (int)message.ReadIntBE();
+                var address = message.ReadUIntBE();
                 var register = BootstrapRegisterHelper.RegisterByAddress(address);
                 Console.WriteLine("  read:  0x" + address.ToString("X4") + " (" + register.Name + ") = " + registers.ReadIntBE(address));
 
@@ -33,7 +33,7 @@ namespace GigE_Cam_Simulator.Commads
         {
             var b = CreateBuffer(resultData.Length);
 
-            b.WriteBytes(resultData.Buffer, resultData.Length);
+            b.WriteBytes(resultData.Buffer, (uint)resultData.Length);
 
             return b;
 

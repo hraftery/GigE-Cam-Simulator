@@ -7,8 +7,8 @@ namespace GigE_Cam_Simulator
     public class PropertyItem
     {
         public string RegisterName { get; }
-        public int RegisterAddress { get; }
         public eBootstrapRegister Register => BootstrapRegisterHelper.RegisterEnumByName(this.RegisterName);
+        public uint RegisterAddress { get; }
 
         public string? StringValue { get; set; }
         public bool IsString { get; set; }
@@ -16,7 +16,7 @@ namespace GigE_Cam_Simulator
         public int IntValue { get; set; }
         public bool IsInt { get; set; }
 
-        public int[]? Bits { get; set; }
+        public uint[]? Bits { get; set; }
         public bool IsBits { get; set; }
 
 
@@ -51,7 +51,7 @@ namespace GigE_Cam_Simulator
                     addr = ((addr & 0xFF000000) >> 16) | (addr & 0xFFFF); //Turn 0x12005678 into 0x00125678.
                 else
                     addr -= 0x6000000;                                    //Turn 0x08FF5678 into 0x02FF5678.
-                this.RegisterAddress = (int)addr;
+                this.RegisterAddress = addr;
             }
             else
             {
@@ -104,10 +104,10 @@ namespace GigE_Cam_Simulator
                 var bitNodes = propertyNode.SelectNodes("bit");
                 if (bitNodes != null && bitNodes.Count > 0)
                 {
-                    int[] bits = new int[bitNodes.Count];
+                    uint[] bits = new uint[bitNodes.Count];
                     for (int i = 0; i < bitNodes.Count; i++)
                     {
-                        bits[i] = int.Parse(bitNodes[i]!.InnerText);
+                        bits[i] = uint.Parse(bitNodes[i]!.InnerText);
                     }
 
                     property.Bits = bits;

@@ -15,7 +15,7 @@
         {
         }
 
-        public BufferReader ToBuffer(int length)
+        public BufferReader ToBuffer(uint length)
         {
             var b = CreateBuffer(length);
 

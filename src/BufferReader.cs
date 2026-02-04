@@ -7,11 +7,11 @@
     public class BufferReader
     {
         byte[] buffer;
-        int bufferPos;
+        uint bufferPos;
 
         public byte[] Buffer => this.buffer;
 
-        public bool Eof => (bufferPos < 0 || bufferPos >= this.buffer.Length);
+        public bool Eof => bufferPos >= this.buffer.Length;
 
         public int Length => this.buffer.Length;
 
@@ -39,7 +39,7 @@
             return (b1 << 8 | b2);
         }
 
-        public void SetIntBE(int offset, int value)
+        public void SetIntBE(uint offset, int value)
         {
             this.buffer[offset++] = (byte)((value >> 24) & 0xFF);
             this.buffer[offset++] = (byte)((value >> 16) & 0xFF);
@@ -55,7 +55,7 @@
             this.buffer[this.bufferPos++] = (byte)((value >>  0) & 0xFF);
         }
 
-        public uint ReadIntBE()
+        public uint ReadUIntBE()
         {
             uint b1 = this.buffer[this.bufferPos++];
             uint b2 = this.buffer[this.bufferPos++];
@@ -65,7 +65,7 @@
             return (b1 << 24 | b2 << 16 | b3 << 8 | b4);
         }
 
-        public uint GetIntBE(int address)
+        public uint GetIntBE(uint address)
         {
             uint b1 = this.buffer[address++];
             uint b2 = this.buffer[address++];
@@ -75,19 +75,19 @@
             return (b1 << 24 | b2 << 16 | b3 << 8 | b4);
         }
 
-        public void WriteBytes(byte[] data, int length)
+        public void WriteBytes(byte[] data, uint length)
         {
             this.SetBytes(this.bufferPos, data, 0, length);
             this.bufferPos += length;
         }
 
-        public void WriteBytes(byte[] data, int dataLength, int dataOffset)
+        public void WriteBytes(byte[] data, uint dataLength, int dataOffset)
         {
             this.SetBytes(this.bufferPos, data, dataOffset, dataLength);
             this.bufferPos += dataLength;
         }
 
-        public byte[] ReadBytes(int length)
+        public byte[] ReadBytes(uint length)
         {
             var b = this.GetBytes(this.bufferPos, length);
             this.bufferPos += length;
@@ -95,25 +95,25 @@
         }
 
 
-        public void SetBytes(int offset, byte[] data, int dataOffset, int dataLength)
+        public void SetBytes(uint offset, byte[] data, int dataOffset, uint dataLength)
         {
             if (data == null)
             {
-                Array.Fill(this.buffer, (byte)0, offset, dataLength);
+                Array.Fill(this.buffer, (byte)0, (int)offset, (int)dataLength);
                 return;
             }
 
-            var l = Math.Min(dataLength, data.Length);
+            var l = (uint)Math.Min(dataLength, data.Length);
             Array.Copy(data, dataOffset, this.buffer, offset, l);
 
             var left = dataLength - l;
             if (left > 0)
             {
-                Array.Fill(this.buffer, (byte)0, offset + l, left);
+                Array.Fill(this.buffer, (byte)0, (int)(offset + l), (int)left);
             }
         }
 
-        public byte[] GetBytes(int address, int length)
+        public byte[] GetBytes(uint address, uint length)
         {
             var result = new byte[length];
             Array.Copy(this.buffer, address, result, 0, length);
@@ -121,7 +121,7 @@
             return result;
         }
 
-        public void WriteString(string value, int length)
+        public void WriteString(string value, uint length)
         {
             byte[] bytes = Encoding.ASCII.GetBytes(value);
    
@@ -131,16 +131,15 @@
                 bytes[length - 1] = 0;
             }
 
-            WriteBytes(bytes, length);
-            WriteNull(Math.Max(0, length - bytes.Length));
+            WriteBytes(bytes, length); //automatically null fills to length if necessary
         }
 
-        public string GetString(int offset, int length)
+        public string GetString(uint offset, uint length)
         {
-            return System.Text.Encoding.UTF8.GetString(this.buffer, offset, length);
+            return System.Text.Encoding.UTF8.GetString(this.buffer, (int)offset, (int)length);
         }
 
-        public byte GetByte(int offset)
+        public byte GetByte(uint offset)
         {
             return this.buffer[offset];
         }
@@ -153,18 +152,18 @@
         }
 
 
-        public void SetByte(int offset, byte value)
+        public void SetByte(uint offset, byte value)
         {
             this.buffer[offset] = value;
         }
 
-        public void WriteNull(int length)
+        public void WriteNull(uint length)
         {
             this.SetNull(this.bufferPos, length);
             this.bufferPos += length;
         }
 
-        public void SetNull(int offset, int length)
+        public void SetNull(uint offset, uint length)
         {
             for (int i = 0; i < length; i++)
             {

@@ -18,7 +18,7 @@ namespace GigE_Cam_Simulator.Streams
             this.PayloadType = payloadType;
         }
 
-        public BufferReader ToBuffer(int length)
+        public BufferReader ToBuffer(uint length)
         {
             var b = CreateBuffer(length + 4);
 

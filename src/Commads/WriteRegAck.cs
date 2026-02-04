@@ -18,7 +18,7 @@ namespace GigE_Cam_Simulator.Commads
 
             while (!message.Eof)
             {
-                var address = (int)message.ReadIntBE();
+                var address = message.ReadUIntBE();
                 var data = message.ReadBytes(4);
                 var register = BootstrapRegisterHelper.RegisterByAddress(address);
 

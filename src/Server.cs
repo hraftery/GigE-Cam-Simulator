@@ -58,11 +58,11 @@
             var gatewayInfo = this.GetGatewayInfo();
             byte[] INVALID_IP = { 0, 0, 0, 0 }; //Not sure what to use if the calls above fail. This is a placeholder.
             var macAddress = this.iface?.GetPhysicalAddress().GetAddressBytes() ?? new byte[] { 0, 0, 0, 0, 0, 0 };
-            for (var i = 0; i < 2; i++)
+            for (uint i = 0; i < 2; i++)
             {
                 registers.WriteByte(eBootstrapRegister.Device_MAC_address_High_Network_interface_0, i + 2, macAddress[i]);
             }
-            for (var i = 2; i < 6; i++)
+            for (uint i = 2; i < 6; i++)
             {
                 registers.WriteByte(eBootstrapRegister.Device_MAC_address_Low_Network_interface_0, i - 2, macAddress[i]);
             }
@@ -195,7 +195,7 @@
 
             var length = msg.ReadWordBE();
             var req_id = msg.ReadWordBE();
-            var data = new BufferReader(msg.ReadBytes((int)length));
+            var data = new BufferReader(msg.ReadBytes(length));
 
             BufferReader? result = null;
 
@@ -328,7 +328,7 @@
         }
 
 
-        public void OnRegisterChanged(int address, Action<RegisterMemory> callback)
+        public void OnRegisterChanged(uint address, Action<RegisterMemory> callback)
         {
             this.registers.AddWriteRegisterHock(address, callback);
         }
