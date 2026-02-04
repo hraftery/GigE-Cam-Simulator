@@ -38,34 +38,6 @@
             this.TriggerWriteHock(address);
         }
 
-        public void WriteBytesNoMap(uint address, byte[] values)
-        {
-            data.SetBytes(address, values, 0, (uint)values.Length);
-        }
-
-        /*
-        public void WriteBytes(uint address, byte[] values)
-        {
-            InternalWriteBytes(address, values, true, true);
-        }
-
-        public void WriteBytesQuietly(uint address, byte[] values)
-        {
-            InternalWriteBytes(address, values, false, true);
-        }
-
-        public void WriteBytesNoMapping(uint address, byte[] values)
-        {
-            InternalWriteBytes(address, values, false, false);
-        }
-
-        private void InternalWriteBytes(uint address, byte[] values, bool trigger, bool mapAddress)
-        {
-            if (mapAddress) { address = MapToLowAddress(address); }
-            data.SetBytes(address, values, 0, (uint)values.Length);
-            if (trigger) { this.TriggerWriteHock(address); }
-        }
-        */
 
         public void WriteIntBE(uint address, int value)
         { 
