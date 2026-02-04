@@ -194,6 +194,12 @@ namespace GigE_Cam_Simulator
             return eBootstrapRegister.Unknown;
 
         }
+
+        public static uint RegisterAddressByName(string registerName)
+        {
+            return RegisterByEnum(RegisterEnumByName(registerName)).Address;
+        }
+
         private static Dictionary<uint, BootstrapRegister> CreateAddressLookup(BootstrapRegister[] registers)
         {
             var lookup = new Dictionary<uint, BootstrapRegister>();
