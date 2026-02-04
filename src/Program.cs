@@ -16,15 +16,27 @@ namespace GigE_Cam_Simulator
             var server = new Server(cameraXml, preSetMemory);
 
 
-            server.OnRegisterChanged(RegisterTypes.Stream_Channel_Packet_Size_0, (mem) =>
+            server.OnRegisterChanged(eBootstrapRegister.Stream_Channel_Packet_Size_0, (regMem) =>
             {
-                // mem.WriteIntBE(0x128, 17301505); // PixelFormatRegister 
-                // mem.WriteIntBE(0x104, 500); // HeightRegister 
-               
-                //if (mem.ReadIntBE(RegisterTypes.Stream_Channel_Packet_Size_0) != 2080)
-                //{
-                //    mem.WriteIntBE(RegisterTypes.Stream_Channel_Packet_Size_0, 2080);
-                // }
+                uint fireTestPacketBitIndex = 0;
+                bool F = regMem.ReadBit(eBootstrapRegister.Stream_Channel_Packet_Size_0, fireTestPacketBitIndex);
+                if (F) //then fire one test packet of size provided in register, and auto-clear
+                {
+                    if(!server.SendStreamPacket(null))
+                    {
+                        //The packet can fail to send because it's too big to fit in the MTU. The spec says
+                        //"When a GVSP transmitter cannot support the requested packet_size, then it MUST NOT fire
+                        // a test packet when requested to do so. Also, it MUST round down the packet_size to the
+                        // nearest supported value and update the register."
+                        //But I can't see any way to find the "nearest supported value" without sending at test
+                        //least one successful test packet! Next best we can do is the maximum safe UDP payload:
+                        //https://stackoverflow.com/a/35697810/3697870
+                        uint oldVal = regMem.ReadIntBE(eBootstrapRegister.Stream_Channel_Packet_Size_0);
+                        uint newVal = (oldVal & 0xFFFF0000) | 576; //Packet size is in lower two bytes.
+                        regMem.WriteIntBE(eBootstrapRegister.Stream_Channel_Packet_Size_0, (int)newVal);
+                    }
+                    regMem.WriteBit(eBootstrapRegister.Stream_Channel_Packet_Size_0, fireTestPacketBitIndex, false);
+                }
             });
 
             // on TriggerSoftware

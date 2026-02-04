@@ -359,13 +359,7 @@
             }
 
             Console.WriteLine("--- >> send Image: start");
-
-            var ip = this.registers.ReadBytes(RegisterTypes.Stream_Channel_Destination_Address_0);
-            var port = this.registers.ReadIntBE( RegisterTypes.Stream_Channel_Port_0);
-            var packetSize = this.registers.ReadIntBE(RegisterTypes.Stream_Channel_Packet_Size_0);
-            this.streamClient.Send(imageData, new IPAddress(ip), port, (int)packetSize);
-
-
+            SendStreamPacket(imageData);
             Console.WriteLine("--- << send Image: end");
 
             return;
@@ -397,6 +391,29 @@
         internal void OnAcquiesceImage(Func<ImageData> callback)
         {
             this.onAcquiesceImageCallback = callback;
+        }
+
+        //NULL data means send a test packet (arbitrary data of packet size)
+        public bool SendStreamPacket(ImageData? data)
+        {
+            var ipReg = registers.ReadBytes(eBootstrapRegister.Stream_Channel_Destination_Address_0);
+            var ip = new IPAddress(ipReg);
+            var port = registers.ReadIntBE(eBootstrapRegister.Stream_Channel_Port_0);
+            var packetSizeReg = registers.ReadIntBE(eBootstrapRegister.Stream_Channel_Packet_Size_0);
+            var packetSize = (uint)(packetSizeReg & 0xFFFF); //lower 16 bits is packet size
+
+            if (data == null)
+            {
+                //Data size is packet size minus IP header (20 bytes) and UDP header (8 bytes).
+                var testData = new Byte[packetSize - 28];
+                //Could fill in some arbitrary data, but not important.
+                return streamClient.Send(testData, ip, port, true); //"don't fragment" must be set for test packets
+            }
+            else
+            {
+                var doNotFragment = (packetSizeReg & 0x40000000) != 0;
+                return streamClient.Send(data, ip, port, packetSize, doNotFragment);
+            }
         }
     }
 }
