@@ -250,7 +250,7 @@
         }
 
 
-        private UnicastIPAddressInformation? GetIpInfo()
+        public UnicastIPAddressInformation? GetIpInfo()
         {
             if (this.iface == null)
                 return null;
@@ -297,16 +297,20 @@
             var ifaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
             foreach (var iface in ifaces)
             {
-                // 
                 var ipProperties = iface.GetIPProperties();
                 foreach (var ip in ipProperties.UnicastAddresses)
                 {
-                    if ((iface.NetworkInterfaceType != System.Net.NetworkInformation.NetworkInterfaceType.Loopback) && (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork))
+                    if ((iface.NetworkInterfaceType != System.Net.NetworkInformation.NetworkInterfaceType.Loopback) &&
+                        (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork))
                     {
                         if (address == "0.0.0.0")
                         {
                             this.iface = iface;
-                            return;
+
+                            //As long as this interface doesn't have a self-assigned address, don't bother looking for another.
+                            byte[] octals = ip.Address.GetAddressBytes();
+                            if (octals[0] != 169 || octals[1] != 254)
+                                return;
                         }
                         else
                         {

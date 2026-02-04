@@ -79,8 +79,12 @@ namespace GigE_Cam_Simulator
             });
 
             server.Run();
+            var ipInfo = server.GetIpInfo();
 
-            Console.WriteLine("Camera Server is running...");
+            if(ipInfo == null)
+                Console.WriteLine("Camera Server is running, but did not get an IP.");
+            else
+                Console.WriteLine("Camera Server is running on " + ipInfo.Address.ToString() + "...");
 
             if (!Console.IsInputRedirected)
                 Console.ReadLine();
