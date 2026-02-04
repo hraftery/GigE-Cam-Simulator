@@ -44,14 +44,14 @@
         {
             registers.WriteIntBE(eBootstrapRegister.Version, 0x00020002); //2.2
 
-            registers.WriteByte(RegisterTypes.Device_Mode, 0, 0b00000001);
-            //                                                  |||||||+---- 1: Big-endian device
-            //                                                  ||||+++----- 0: Transmitter
-            //                                                  ||++-------- 0: Reserved
-            //                                                  ++---------- 0: Single Link Configuration
-            registers.WriteByte(RegisterTypes.Device_Mode, 1, 0); //Reserved
-            registers.WriteByte(RegisterTypes.Device_Mode, 2, 0); //Reserved
-            registers.WriteByte(RegisterTypes.Device_Mode, 3, 2); //ASCII character set
+            registers.WriteByte(eBootstrapRegister.Device_Mode, 0, 0b10000000);
+            //                                                  ||||||++---- 0: Single Link Configuration
+            //                                                  ||||++------ 0: Reserved
+            //                                                  |+++-------- 0: Transmitter
+            //                                                  +----------- 1: Big-endian device
+            registers.WriteByte(eBootstrapRegister.Device_Mode, 1, 0); //Reserved
+            registers.WriteByte(eBootstrapRegister.Device_Mode, 2, 0); //Reserved
+            registers.WriteByte(eBootstrapRegister.Device_Mode, 3, 2); //ASCII character set
 
             // set MAC
             var ipInfo = this.GetIpInfo();

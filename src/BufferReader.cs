@@ -95,21 +95,21 @@
         }
 
 
-        public void SetBytes(uint offset, byte[] data, int dataOffset, uint dataLength)
+        public void SetBytes(uint address, byte[] data, int dataOffset, uint dataLength)
         {
             if (data == null)
             {
-                Array.Fill(this.buffer, (byte)0, (int)offset, (int)dataLength);
+                Array.Fill(this.buffer, (byte)0, (int)address, (int)dataLength);
                 return;
             }
 
             var l = (uint)Math.Min(dataLength, data.Length);
-            Array.Copy(data, dataOffset, this.buffer, offset, l);
+            Array.Copy(data, dataOffset, this.buffer, address, l);
 
             var left = dataLength - l;
             if (left > 0)
             {
-                Array.Fill(this.buffer, (byte)0, (int)(offset + l), (int)left);
+                Array.Fill(this.buffer, (byte)0, (int)(address + l), (int)left);
             }
         }
 
@@ -172,40 +172,42 @@
             }
         }
 
-        public void SetBit(int offset, int index, bool value)
+        //Note the GigE Vision spec says "the leftmost bit is the most significant bit" as you'd
+        //expect, especially (but not only) for big-endian. But it then denotes it as the "0" bit!
+        //That's super confusing, because the 2^0 bit is then the 31st bit (in a 4 byte register).
+        //The GenICam standard also allows registers to be defined "LittleEndian" in the XML, which
+        //actually refers to the bits, not the bytes! We'll ignore that for now, and stick with the
+        //bits in a register starting at 0 for the MSb, as appears in the spec. Pictorially:
+        // Byte:       |    0    |     1     |      2     |      3      |
+        // Bit:        |0       7|8        15|16        23|24         31|
+        // Bit & byte:   <-- most significant     least significant -->
+        private bool GetOrSetBitHelper(uint offset, uint index, bool? value)
         {
-            int byteIndex = index >> 3;
-            int bitIndex = 7 - (index & 0x7);
+            uint byteIndex = index / 8;
+            uint bitIndex  = index % 8;
+            byte bitField = (byte)(0b10000000u >> (int)bitIndex);
 
-            int result;
-            if (value)
+            if (value != null) //setter
             {
-                result = this.buffer[offset + byteIndex] | (1 << bitIndex);
-            }
-            else
-            {
-                result = this.buffer[offset + byteIndex] & (~(1 << bitIndex));
-            }
+                bool newVal = value.Value;
+                int newByte = newVal ? buffer[offset + byteIndex] | bitField     //set bit
+                                     : buffer[offset + byteIndex] & (~bitField); //clear bit
 
-            this.buffer[offset + byteIndex] = (byte)result;
+                buffer[offset + byteIndex] = (byte)newByte;
+                return newVal; //redundant return value
+            }
+            else //getter
+                return (buffer[offset + byteIndex] & bitField) != 0;
         }
 
-        public void GetBit(int offset, int index, bool value)
+        public void SetBit(uint offset, uint index, bool value)
         {
-            int byteIndex = index >> 3;
-            int bitIndex = index & 0x7;
+            GetOrSetBitHelper(offset, index, value);
+        }
 
-            int result;
-            if (value)
-            {
-                result = this.buffer[offset + byteIndex] | (1 << bitIndex);
-            }
-            else
-            {
-                result = this.buffer[offset + byteIndex] & (~(1 << bitIndex));
-            }
-
-            this.buffer[offset + byteIndex] = (byte)result;
+        public bool GetBit(uint offset, uint index)
+        {
+            return GetOrSetBitHelper(offset, index, null);
         }
 
 
