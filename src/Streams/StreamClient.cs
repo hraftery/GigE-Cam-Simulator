@@ -30,6 +30,16 @@
 
         public bool Send(ImageData data, IPAddress ip, uint port, uint packetSize, bool doNotFragment)
         {
+            //NOTE: this assumes headers with 16-bit block_id, which was superseded in GigE Vision
+            //version 2.0 by 64-bit "block_id64". A GigE Vision 2.x Receiver is not required to support
+            //16-bit block_id, so this will only work with 1.x Receivers or bi-mode 2.x Receivers.
+            const uint PACKET_OVERHEAD = 20 + 8 + 8; //IP header + UDP header + GVSP header
+            if (packetSize <= PACKET_OVERHEAD)
+            {
+                Console.WriteLine("*** Attempt to send image data with packet size smaller than overhead.");
+                return false;
+            }
+
             this.imageSendClientBlockId++;
 
             var blockId = (uint)this.imageSendClientBlockId;
@@ -57,7 +67,7 @@
                 packet size. However, it is also possible to pad the last data packet so that all data payload
                 packets are exactly the same size.
                  */
-                var chunkSize = packetSize - 36;
+                var chunkSize = packetSize - PACKET_OVERHEAD;
 
                 while (offset < data.Data.Length)
                 {
