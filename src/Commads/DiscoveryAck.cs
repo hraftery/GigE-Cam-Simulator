@@ -35,28 +35,28 @@
         public DiscoveryAck(uint req_id, RegisterMemory registers) :
             base(req_id, GvcpPacketType.GVCP_PACKET_TYPE_ACK, ArvGvcpCommand.GVCP_COMMAND_DISCOVERY_ACK)
         {
-            uint version = registers.ReadIntBE(RegisterTypes.Version);
+            uint version = registers.ReadIntBE(eBootstrapRegister.Version);
             VersionMajor            = (version >> 16) & 0xFFFF; //The version register stores major/minor in the same way the
             VersionMinor            = (version >>  0) & 0xFFFF; //ack writes it, but we split it apart for clarity anyway.
 
-            DeviceMode              = registers.ReadIntBE(RegisterTypes.Device_Mode);
+            DeviceMode              = registers.ReadIntBE(eBootstrapRegister.Device_Mode);
 
-            MacAddressHigh          = registers.ReadBytes(RegisterTypes.Device_MAC_address_High_Network_interface_0);
-            MacAddressLow           = registers.ReadBytes(RegisterTypes.Device_MAC_address_Low_Network_interface_0);
+            MacAddressHigh          = registers.ReadBytes(eBootstrapRegister.Device_MAC_address_High_Network_interface_0);
+            MacAddressLow           = registers.ReadBytes(eBootstrapRegister.Device_MAC_address_Low_Network_interface_0);
 
-            ip_config_options       = registers.ReadIntBE(RegisterTypes.Network_interface_capability_0);
-            ip_config_current       = registers.ReadIntBE(RegisterTypes.Network_interface_configuration_0);
+            ip_config_options       = registers.ReadIntBE(eBootstrapRegister.Network_interface_capability_0);
+            ip_config_current       = registers.ReadIntBE(eBootstrapRegister.Network_interface_configuration_0);
 
-            current_ip_buf          = registers.ReadBytes(RegisterTypes.Current_IP_address_Network_interface_0);
-            current_subnet_mask_buf = registers.ReadBytes(RegisterTypes.Current_subnet_mask_Network_interface_0);
-            current_gateway_buf     = registers.ReadBytes(RegisterTypes.Current_default_Gateway_Network_interface_0);
+            current_ip_buf          = registers.ReadBytes(eBootstrapRegister.Current_IP_address_Network_interface_0);
+            current_subnet_mask_buf = registers.ReadBytes(eBootstrapRegister.Current_subnet_mask_Network_interface_0);
+            current_gateway_buf     = registers.ReadBytes(eBootstrapRegister.Current_default_Gateway_Network_interface_0);
 
-            manufacturer_name       = registers.ReadString(RegisterTypes.Manufacturer_name);
-            model_name              = registers.ReadString(RegisterTypes.Model_name);
-            device_version          = registers.ReadString(RegisterTypes.Device_version);
-            manufacturer_info       = registers.ReadString(RegisterTypes.Manufacturer_specific_information);
-            serial_number           = registers.ReadString(RegisterTypes.Serial_number);
-            user_defined_name       = registers.ReadString(RegisterTypes.User_defined_name);
+            manufacturer_name       = registers.ReadString(eBootstrapRegister.Manufacturer_name);
+            model_name              = registers.ReadString(eBootstrapRegister.Model_name);
+            device_version          = registers.ReadString(eBootstrapRegister.Device_version);
+            manufacturer_info       = registers.ReadString(eBootstrapRegister.Manufacturer_specific_information);
+            serial_number           = registers.ReadString(eBootstrapRegister.Serial_number);
+            user_defined_name       = registers.ReadString(eBootstrapRegister.User_defined_name);
         }
 
         public BufferReader ToBuffer()

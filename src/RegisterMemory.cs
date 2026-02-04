@@ -11,13 +11,13 @@
 
         public byte ReadByte(RegisterTypes register, int index)
         {
-            var address = RegisterTypeHelper.RegisterByType(register).Address + index;
+            var address = BootstrapRegisterHelper.RegisterByEnum(register).Address;
             return data.GetByte(address);
         }
 
         public void WriteByte(RegisterTypes register, int index, byte value)
         {
-            var address = RegisterTypeHelper.RegisterByType(register).Address + index;
+            var address = BootstrapRegisterHelper.RegisterByEnum(register).Address + index;
             data.SetByte(address, value);
             this.TriggerWriteHock(address);
         }
@@ -39,14 +39,14 @@
             return data.GetIntBE(address);
         }
 
-        public uint ReadIntBE(RegisterTypes register)
+        public uint ReadIntBE(eBootstrapRegister register)
         {
-            var reg = RegisterTypeHelper.RegisterByType(register);
+            var reg = BootstrapRegisterHelper.RegisterByEnum(register);
             return this.ReadIntBE(reg.Address);
         }
-        public void WriteIntBE(RegisterTypes register, int value)
+        public void WriteIntBE(eBootstrapRegister register, int value)
         {
-            var reg = RegisterTypeHelper.RegisterByType(register);
+            var reg = BootstrapRegisterHelper.RegisterByEnum(register);
             this.WriteIntBE(reg.Address, value);
         }
 
@@ -55,16 +55,16 @@
             return this.data.GetBytes(address, lenght);
         }
 
-        public byte[] ReadBytes(RegisterTypes register)
+        public byte[] ReadBytes(eBootstrapRegister register)
         {
-            var reg = RegisterTypeHelper.RegisterByType(register);
+            var reg = BootstrapRegisterHelper.RegisterByEnum(register);
             return this.data.GetBytes(reg.Address, reg.Length);
         }
 
 
-        public void WriteBytes(RegisterTypes register, byte[] values)
+        public void WriteBytes(eBootstrapRegister register, byte[] values)
         {
-            var reg = RegisterTypeHelper.RegisterByType(register);
+            var reg = BootstrapRegisterHelper.RegisterByEnum(register);
             var address = reg.Address;
 
             var l = Math.Min(values.Length, reg.Length);
@@ -85,14 +85,14 @@
             this.TriggerWriteHock(address);
         }
 
-        public void WriteBit(RegisterTypes register, int index, bool value)
+        public void WriteBit(eBootstrapRegister register, int index, bool value)
         {
-            WriteBit(RegisterTypeHelper.RegisterByType(register).Address, index, value);
+            WriteBit(BootstrapRegisterHelper.RegisterByEnum(register).Address, index, value);
         }
 
-        public void WriteString(RegisterTypes register, string value)
+        public void WriteString(eBootstrapRegister register, string value)
         {
-            var reg = RegisterTypeHelper.RegisterByType(register);
+            var reg = BootstrapRegisterHelper.RegisterByEnum(register);
             var charData = ASCIIEncoding.ASCII.GetBytes(value);
             if (charData.Length >= reg.Length)
             {
@@ -102,9 +102,9 @@
             WriteBytes(register, charData);
         }
 
-        public string ReadString(RegisterTypes register)
+        public string ReadString(eBootstrapRegister register)
         {
-            var reg = RegisterTypeHelper.RegisterByType(register);
+            var reg = BootstrapRegisterHelper.RegisterByEnum(register);
             return this.data.GetString(reg.Address, reg.Length);
         }
 

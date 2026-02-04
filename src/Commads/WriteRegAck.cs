@@ -20,9 +20,9 @@ namespace GigE_Cam_Simulator.Commads
             {
                 var address = (int)message.ReadIntBE();
                 var data = message.ReadBytes(4);
-                var register = RegisterTypeHelper.RegisterByAddress(address);
+                var register = BootstrapRegisterHelper.RegisterByAddress(address);
 
-                Console.WriteLine("  write: 0x" + address.ToString("X4") + " (" + register.TypeName + ") = " + string.Join(", ", data));
+                Console.WriteLine("  write: 0x" + address.ToString("X4") + " (" + register.Name + ") = " + string.Join(", ", data));
 
                 registers.WriteBytes(address, data);
 

@@ -7,8 +7,8 @@ namespace GigE_Cam_Simulator
     public class PropertyItem
     {
         public string RegisterName { get; }
-        public RegisterTypes Register => RegisterTypeHelper.RegisterTypeByName(this.RegisterName);
         public int RegisterAddress { get; }
+        public eBootstrapRegister Register => BootstrapRegisterHelper.RegisterEnumByName(this.RegisterName);
 
         public string? StringValue { get; set; }
         public bool IsString { get; set; }
@@ -55,7 +55,7 @@ namespace GigE_Cam_Simulator
             }
             else
             {
-                this.RegisterAddress = RegisterTypeHelper.RegisterByType(RegisterTypeHelper.RegisterTypeByName(registerNameOrAddress)).Address;
+                this.RegisterAddress = BootstrapRegisterHelper.RegisterByEnum(BootstrapRegisterHelper.RegisterEnumByName(registerNameOrAddress)).Address;
             }
             
         }
