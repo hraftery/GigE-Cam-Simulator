@@ -44,6 +44,40 @@
 		<int>0x01080001</int>            <!-- // Mono8  -->
 	</property>
 	<property>
+		<register>0x200001C0</register>  <!-- // PixelFormat capability register  -->
+		<bit>0</bit>  <!-- // isPixelFormatMono8Implemented -->
+<?ignore
+		<bit>1</bit>  <!-- // isPixelFormatMono10Implemented -->
+		<bit>2</bit>  <!-- // isPixelFormatMono12Implemented -->
+		<bit>3</bit>  <!-- // isPixelFormatBayer8Implemented -->
+		<bit>4</bit>  <!-- // isPixelFormatBayer10Implemented -->
+		<bit>5</bit>  <!-- // isPixelFormatBayer12Implemented -->
+		<bit>6</bit>  <!-- // isPixelFormatBGRa8Implemented -->
+		<bit>7</bit>  <!-- // isPixelFormatBGRY8Implemented -->
+		<bit>8</bit>  <!-- // isPixelFormatRGB10p32Implemented -->
+		<bit>9</bit>  <!-- // isPixelFormatYUV422_8_UYVYImplemented -->
+		<bit>10</bit> <!-- // isPixelFormatYUV422_8_YUYVImplemented -->
+		<bit>11</bit> <!-- // isPixelFormatMono12PackedImplemented -->
+		<bit>12</bit> <!-- // isPixelFormatGreenOnly8Implemented -->
+		<bit>13</bit> <!-- // isPixelFormatRGBG8Implemented -->
+		<bit>14</bit> <!-- // isPixelFormatRGBG12Implemented -->
+		<bit>15</bit> <!-- // isPixelFormatRGBG12PackedImplemented -->
+		<bit>16</bit> <!-- // isPixelFormatRGB12V1Implemented -->
+		<bit>17</bit> <!-- // isPixelFormatRGB8PackedImplemented -->
+?>
+	</property>	
+	
+<?ignore
+	<property>
+		<register>0x20000E50</register>  <!-- // transferTurbo Pixel Format CapabilityValue Registers  -->
+		<bit>0</bit>  <!-- // capMono8 -->
+		<bit>2</bit>  <!-- // capMono12 -->
+		<bit>12</bit> <!-- // capG8 -->
+		<bit>13</bit> <!-- // capBiColorRGBG8 -->
+		<bit>14</bit> <!-- // capBiColorRGBG12 -->
+	</property>
+?>
+	<property>
 		<register>0x20000090</register>  <!-- // Height  -->
 		<int>480</int>
 	</property>
