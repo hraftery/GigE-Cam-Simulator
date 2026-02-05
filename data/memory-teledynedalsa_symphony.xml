@@ -85,4 +85,9 @@
 		<register>0x20000070</register>  <!-- // Width  -->
 		<int>640</int>
 	</property>
+	<property>
+		<register>0x2000009C</register>  <!-- // SaperaBufferFormat  -->
+		<int>16844800</int>
+	</property>
+
 </memory>
