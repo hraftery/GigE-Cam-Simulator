@@ -24,16 +24,10 @@
 		<string>The quick brown fox jumps over a lazy dog</string>
 	</property>
 	<property>
-		<register>XML_Device_Description_File_Second_URL</register>
-		<string>http://example.org</string>
-	</property>
-	<property>
 		<register>GVCP_Capability</register>
-		<bit>0</bit>
-		<bit>1</bit>
-		<bit>4</bit>
-		<bit>29</bit>
-		<bit>30</bit>
+		<bit>0</bit>  <!-- // User-defined name register is supported. -->
+		<bit>1</bit>  <!-- // Serial number register is supported -->
+		<bit>30</bit> <!-- // WRITEMEM_CMD and WRITEMEM_ACK are supported. -->
 	</property>
 	
 	<!-- // https://github.com/AravisProject/aravis/blob/eb948f080775f9ff78ad6d1fa053aff9e5e2abc9/src/arvfakecamera.c#L1076 -->
