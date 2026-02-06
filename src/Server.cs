@@ -38,6 +38,9 @@
             this.xml = File.ReadAllBytes(camXmlFileName);
 
             this.InitRegisters(preSetMemory);
+            //Now the initial values are set, arm the write triggers so we can take
+            //action when the Application (camera user software) changes something.
+            this.registers.WriteHooksEnabled = true;
         }
 
         private void InitRegisters(RegisterConfig preSetMemory)
@@ -330,13 +333,13 @@
         public void OnRegisterChanged(eBootstrapRegister regEnum, Action<RegisterMemory> callback)
         {
             var reg = BootstrapRegisterHelper.RegisterByEnum(regEnum);
-            this.registers.AddWriteRegisterHock(reg.Address, callback);
+            this.registers.AddWriteRegisterHook(reg.Address, callback);
         }
 
 
         public void OnRegisterChanged(uint address, Action<RegisterMemory> callback)
         {
-            this.registers.AddWriteRegisterHock(address, callback);
+            this.registers.AddWriteRegisterHook(address, callback);
         }
 
         private Timer? acquisitionTimer;

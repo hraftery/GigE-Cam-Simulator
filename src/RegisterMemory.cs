@@ -7,7 +7,8 @@
     public class RegisterMemory
     {
         private BufferReader data;
-        Dictionary<uint, Action<RegisterMemory>> writeRegisterHock = new Dictionary<uint, Action<RegisterMemory>>();
+        Dictionary<uint, Action<RegisterMemory>> writeRegisterHook = new Dictionary<uint, Action<RegisterMemory>>();
+        public bool WriteHooksEnabled { get; set; } = false;
 
         public bool ReadBit(eBootstrapRegister register, uint index)
         {
@@ -29,20 +30,20 @@
         {
             var address = BootstrapRegisterHelper.RegisterByEnum(register).Address + index;
             data.SetByte(address, value);
-            this.TriggerWriteHock(address);
+            this.TriggerWriteHook(address);
         }
 
         public void WriteBytes(uint address, byte[] values)
         {
             data.SetBytes(MapToLowAddress(address), values, 0, (uint)values.Length);
-            this.TriggerWriteHock(address);
+            this.TriggerWriteHook(address);
         }
 
 
         public void WriteIntBE(uint address, int value)
         { 
             data.SetIntBE(MapToLowAddress(address), value);
-            this.TriggerWriteHock(address);
+            this.TriggerWriteHook(address);
         }
 
         public uint ReadIntBE(uint address)
@@ -86,14 +87,14 @@
             // clear buffer
             this.data.SetNull(address + l, reg.Length - l);
 
-            this.TriggerWriteHock(address);
+            this.TriggerWriteHook(address);
         }
 
         public void WriteBit(uint address, uint index, bool value)
         {
             this.data.SetBit(MapToLowAddress(address), index, value);
 
-            this.TriggerWriteHock(address);
+            this.TriggerWriteHook(address);
         }
 
         public void WriteBit(eBootstrapRegister register, uint index, bool value)
@@ -128,16 +129,19 @@
         /// <summary>
         /// Register a callback that is triggered when data is written to a given address
         /// </summary>
-        public void AddWriteRegisterHock(uint address, Action<RegisterMemory> callback)
+        public void AddWriteRegisterHook(uint address, Action<RegisterMemory> callback)
         {
-            this.writeRegisterHock.Add(address, callback);
+            this.writeRegisterHook.Add(address, callback);
         }
 
-        private void TriggerWriteHock(uint address)
+        private void TriggerWriteHook(uint address)
         {
-            if (this.writeRegisterHock.TryGetValue(address, out var callback))
+            if (this.WriteHooksEnabled &&
+                this.writeRegisterHook.TryGetValue(address, out var callback))
             {
+                this.WriteHooksEnabled = false; //prevent an infinite loop by default
                 callback(this);
+                this.WriteHooksEnabled = true;
             }
         }
 
