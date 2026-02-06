@@ -134,7 +134,11 @@
             {
                 if (property.IsString)
                 {
-                    registers.WriteString(property.Register, property.StringValue!);
+                    //Prefer a known register write, because then length checks can be performed.
+                    if (property.Register != eBootstrapRegister.Unknown)
+                        registers.WriteString(property.Register, property.StringValue!);
+                    else //otherwise just write the string as provided
+                        registers.WriteString(property.RegisterAddress, property.StringValue!);
                 }
                 else if (property.IsBits)
                 {

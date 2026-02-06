@@ -101,6 +101,12 @@
             WriteBit(BootstrapRegisterHelper.RegisterByEnum(register).Address, index, value);
         }
 
+        public void WriteString(uint address, string value)
+        {
+            var charData = ASCIIEncoding.ASCII.GetBytes(value);
+            WriteBytes(address, charData);
+        }
+
         public void WriteString(eBootstrapRegister register, string value)
         {
             var reg = BootstrapRegisterHelper.RegisterByEnum(register);
