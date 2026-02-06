@@ -97,18 +97,25 @@ namespace GigE_Cam_Simulator
         /// This optional register provides IP address information about the primary application holding the control channel privilege.
         /// </summary>
         Primary_Application_IP_address,
-        MCP,
-        MCDA,
-        MCTT,
-        MCRC,
-        MCSP,
+        Message_Channel_Port,
+        Message_Channel_Destination_Address,
+        Message_Channel_Transmission_Timeout,
+        Message_Channel_Retry_Count,
+        Message_Channel_Source_Port,
+        Message_Channel_Configuration,
         Stream_Channel_Port_0,
         Stream_Channel_Packet_Size_0,
-        SCPD0,
+        Stream_Channel_Packet_Delay_0,
         Stream_Channel_Destination_Address_0,
-        SCSP0,
-        SCC0,
-        SCCFG0,
+        Stream_Channel_Source_Port_0,
+        Stream_Channel_Capability_0,
+        Stream_Channel_Configuration_0,
+        Stream_Channel_Zone_0,
+        Stream_Channel_Zone_Direction_0,
+        Stream_Channel_Max_Packet_Count_0,
+        Stream_Channel_Max_Block_Size_High_0,
+        Stream_Channel_Max_Block_Size_Low_0,
+        Stream_Channel_Extended_Bootstrap_Address_0,
         SCP1,
         SCPS1,
         SCPD1,
@@ -316,18 +323,25 @@ namespace GigE_Cam_Simulator
                 new BootstrapRegister(eBootstrapRegister.Control_Channel_Privilege,                               0x0A00, 4), // CCP
                 new BootstrapRegister(eBootstrapRegister.Primary_Application_Port,                                0x0A04, 4),
                 new BootstrapRegister(eBootstrapRegister.Primary_Application_IP_address,                          0x0A14, 4),
-                new BootstrapRegister(eBootstrapRegister.MCP,                                                     0x0B00, 4),
-                new BootstrapRegister(eBootstrapRegister.MCDA,                                                    0x0B10, 4),
-                new BootstrapRegister(eBootstrapRegister.MCTT,                                                    0x0B14, 4),
-                new BootstrapRegister(eBootstrapRegister.MCRC,                                                    0x0B18, 4),
-                new BootstrapRegister(eBootstrapRegister.MCSP,                                                    0x0B1C, 4),
-                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Port_0,                                   0x0D00, 4),
+                new BootstrapRegister(eBootstrapRegister.Message_Channel_Port,                                    0x0B00, 4), // MCP
+                new BootstrapRegister(eBootstrapRegister.Message_Channel_Destination_Address,                     0x0B10, 4), // MCDA
+                new BootstrapRegister(eBootstrapRegister.Message_Channel_Transmission_Timeout,                    0x0B14, 4), // MCTT
+                new BootstrapRegister(eBootstrapRegister.Message_Channel_Retry_Count,                             0x0B18, 4), // MCRR
+                new BootstrapRegister(eBootstrapRegister.Message_Channel_Source_Port,                             0x0B1C, 4), // MCSP
+                new BootstrapRegister(eBootstrapRegister.Message_Channel_Configuration,                           0x0B20, 4), // MCCFG
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Port_0,                                   0x0D00, 4), // SCP0
                 new BootstrapRegister(eBootstrapRegister.Stream_Channel_Packet_Size_0,                            0x0D04, 4), // SCPS0
-                new BootstrapRegister(eBootstrapRegister.SCPD0,                                                   0x0D08, 4),
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Packet_Delay_0,                           0x0D08, 4), // SCPD0
                 new BootstrapRegister(eBootstrapRegister.Stream_Channel_Destination_Address_0,                    0x0D18, 4), // SCDA0
-                new BootstrapRegister(eBootstrapRegister.SCSP0,                                                   0x0D1C, 4),
-                new BootstrapRegister(eBootstrapRegister.SCC0,                                                    0x0D20, 4),
-                new BootstrapRegister(eBootstrapRegister.SCCFG0,                                                  0x0D24, 4),
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Source_Port_0,                            0x0D1C, 4), // SCSP0
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Capability_0,                             0x0D20, 4), // SCC0
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Configuration_0,                          0x0D24, 4), // SCCFG0
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Zone_0,                                   0x0D28, 4), // SCZ0
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Zone_Direction_0,                         0x0D2C, 4), // SCZD0
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Max_Packet_Count_0,                       0x0D30, 4), // SCMPC0
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Max_Block_Size_High_0,                    0x0D34, 4), // SCMBS0
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Max_Block_Size_Low_0,                     0x0D38, 4), // SCMBS0
+                new BootstrapRegister(eBootstrapRegister.Stream_Channel_Extended_Bootstrap_Address_0,             0x0D3C, 4), // SCEBA0                
                 new BootstrapRegister(eBootstrapRegister.SCP1,                                                    0x0D40, 4),
                 new BootstrapRegister(eBootstrapRegister.SCPS1,                                                   0x0D44, 4),
                 new BootstrapRegister(eBootstrapRegister.SCPD1,                                                   0x0D48, 4),

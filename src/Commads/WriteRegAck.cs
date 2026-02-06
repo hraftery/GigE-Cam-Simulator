@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GigE_Cam_Simulator.Commads
+namespace GigE_Cam_Simulator.GVCP
 {
 
     /// <summary>

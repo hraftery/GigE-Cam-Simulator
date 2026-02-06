@@ -1,4 +1,4 @@
-﻿namespace GigE_Cam_Simulator.Commads
+﻿namespace GigE_Cam_Simulator.GVCP
 {
     public enum PackageCommandType
     {
@@ -20,7 +20,7 @@
         PENDING_ACK = 0x0089,
     }
 
-    public enum GvcpPacketType
+    public enum GvcpPacketType : byte
     {
         GVCP_PACKET_TYPE_ACK = 0x00,
         GVCP_PACKET_TYPE_CMD = 0x42,
@@ -45,6 +45,13 @@
         GVCP_COMMAND_WRITE_MEMORY_CMD = 0x0086,
         GVCP_COMMAND_WRITE_MEMORY_ACK = 0x0087,
         GVCP_COMMAND_PENDING_ACK = 0x0089
+    }
+
+    public enum GvcpCommandFlag : byte
+    {
+        //upper 4 bits are specific to each command
+        //lower 4 bites are commmon, but all but one is reserved
+        ACKNOWLEDGE = 0x01, //bit 7
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GigE_Cam_Simulator.Commads
+namespace GigE_Cam_Simulator.GVCP
 {
     /// <summary>
     /// https://www.visiononline.org/userAssets/aiaUploads/File/GigE_Vision_Specification_2-0-03.pdf

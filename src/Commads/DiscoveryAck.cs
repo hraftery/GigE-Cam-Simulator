@@ -1,4 +1,4 @@
-﻿namespace GigE_Cam_Simulator.Commads
+﻿namespace GigE_Cam_Simulator.GVCP
 {
     /// <summary>
     /// https://aravisproject.github.io/docs/aravis-0.4/aravis-gvcp.html

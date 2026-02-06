@@ -6,7 +6,7 @@
     using System.Net.NetworkInformation;
     using System.Net.Sockets;
     using System.Threading;
-    using GigE_Cam_Simulator.Commads;
+    using GigE_Cam_Simulator.GVCP;
     using GigE_Cam_Simulator.Streams;
 
     internal class Server
@@ -176,7 +176,7 @@
             var msg = new BufferReader(server.EndReceive(res, ref endpoint));
 
             var identifier = msg.ReadByte();
-            if (identifier != 0x42) //Must start with the GVCP message key value
+            if (identifier != (byte)GvcpPacketType.GVCP_PACKET_TYPE_CMD) //Must start with the GVCP message key value
             {
                 server.BeginReceive(new AsyncCallback(this.IncomingMessage), server);
                 return;
