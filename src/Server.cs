@@ -91,7 +91,12 @@
             registers.WriteBytes(eBootstrapRegister.Current_default_Gateway_Network_interface_0, gatewayInfo?.Address.GetAddressBytes() ?? INVALID_IP);
 
             // Message capabilities
-            registers.WriteByte(eBootstrapRegister.GVSP_Capability, 0, 0); //SCSPx, legacy block id, SCMBSx and SCEBAx all not supported.
+            registers.WriteByte(eBootstrapRegister.GVSP_Capability, 0, 0b01000000);
+            //                                                           ||||++++---- 0: Reserved. Always 0.
+            //                                                           |||+-------- 0: SCEBAx (extended bootstrap address) not supported
+            //                                                           ||+--------- 0: SCMBSx (max block size) not supported
+            //                                                           |+---------- 1: legacy 16-bit block_id supported
+            //                                                           +----------- 0: SCSPx (source port) not supported
             registers.WriteByte(eBootstrapRegister.Message_channel_Capability, 0, 0); //MCSP, MCCFG and MCEC all not supported
             //GVCP capability expected to be provided in memory.xml, so nothing done here.
 

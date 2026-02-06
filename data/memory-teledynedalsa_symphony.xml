@@ -27,7 +27,11 @@
 		<register>GVCP_Capability</register>
 		<bit>0</bit>  <!-- // User-defined name register is supported. -->
 		<bit>1</bit>  <!-- // Serial number register is supported -->
+		<bit>2</bit>  <!-- // Heartbeat disabled -->
+<?ignore
 		<bit>30</bit> <!-- // WRITEMEM_CMD and WRITEMEM_ACK are supported. -->
+?>
+		<bit>31</bit> <!-- // concatenation (multiple operations in one message) is supported. -->
 	</property>
 	
 	<!-- // https://github.com/AravisProject/aravis/blob/eb948f080775f9ff78ad6d1fa053aff9e5e2abc9/src/arvfakecamera.c#L1076 -->
