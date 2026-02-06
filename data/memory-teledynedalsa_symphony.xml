@@ -42,6 +42,7 @@
 	<property>
 		<register>0x20000060</register>  <!-- // Pixel Format  -->
 		<int>0x01080001</int>            <!-- // Mono8  -->
+		<endianess>LittleEndian</endianess>
 	</property>
 	<property>
 		<register>0x200001C0</register>  <!-- // PixelFormat capability register  -->
@@ -65,6 +66,7 @@
 		<bit>16</bit> <!-- // isPixelFormatRGB12V1Implemented -->
 		<bit>17</bit> <!-- // isPixelFormatRGB8PackedImplemented -->
 ?>
+		<endianess>LittleEndian</endianess>
 	</property>	
 	
 <?ignore
@@ -75,19 +77,23 @@
 		<bit>12</bit> <!-- // capG8 -->
 		<bit>13</bit> <!-- // capBiColorRGBG8 -->
 		<bit>14</bit> <!-- // capBiColorRGBG12 -->
+		<endianess>LittleEndian</endianess>
 	</property>
 ?>
 	<property>
 		<register>0x20000090</register>  <!-- // Height  -->
 		<int>480</int>
+		<endianess>LittleEndian</endianess>
 	</property>
 	<property>
 		<register>0x20000070</register>  <!-- // Width  -->
 		<int>640</int>
+		<endianess>LittleEndian</endianess>
 	</property>
 	<property>
 		<register>0x2000009C</register>  <!-- // SaperaBufferFormat  -->
 		<int>16844800</int>
+		<endianess>LittleEndian</endianess>
 	</property>
 
 </memory>

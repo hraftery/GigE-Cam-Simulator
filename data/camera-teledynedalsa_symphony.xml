@@ -7055,7 +7055,7 @@
          <pInvalidator>pBinningHorizontalReg</pInvalidator>
          <pInvalidator>pPixelFormatReg</pInvalidator>
          <Sign>Unsigned</Sign>
-         <Endianess>BigEndian</Endianess>
+         <Endianess>LittleEndian</Endianess>
       </IntReg>
 
 
@@ -7139,7 +7139,7 @@
          <pInvalidator>multipleROICountHorizontal_Invalidator</pInvalidator>
          <pInvalidator>pBinningVerticalReg</pInvalidator>
          <Sign>Unsigned</Sign>
-         <Endianess>BigEndian</Endianess>
+         <Endianess>LittleEndian</Endianess>
       </IntReg>
 
       <IntReg Name="heightMaxReg">
@@ -7168,7 +7168,7 @@
          <AccessMode>RW</AccessMode>
          <pPort>Device</pPort>
          <Sign>Unsigned</Sign>
-         <Endianess>BigEndian</Endianess>
+         <Endianess>LittleEndian</Endianess>
       </IntReg>
 
       <StructReg Comment="Sensor Capability">
@@ -7210,7 +7210,7 @@
          <Length>4</Length>
          <AccessMode>RO</AccessMode>
          <pPort>Device</pPort>
-         <Endianess>BigEndian</Endianess>
+         <Endianess>LittleEndian</Endianess>
          <StructEntry Name="isPixelFormatMono8Implemented">
             <Bit>0</Bit>
          </StructEntry>
@@ -7377,7 +7377,7 @@
          <AccessMode>RW</AccessMode>
          <pPort>Device</pPort>
          <Sign>Unsigned</Sign>
-         <Endianess>BigEndian</Endianess>
+         <Endianess>LittleEndian</Endianess>
       </IntReg>
       <Enumeration Name="PixelSize" NameSpace="Standard">
          <ToolTip>Pixel Size</ToolTip>
