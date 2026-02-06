@@ -26,7 +26,7 @@ namespace GigE_Cam_Simulator.GVCP
             this.address = address;
             var register = BootstrapRegisterHelper.RegisterByAddress(address);
 
-            Console.WriteLine("  read:  0x" + address.ToString("X4") + " (" + register.Name + ") = " + ByteToString(resultData));
+            Console.WriteLine("read:  0x" + address.ToString("X4") + " (" + register.Name + ") = " + ByteToString(resultData));
         }
 
         public override BufferReader ToBuffer()

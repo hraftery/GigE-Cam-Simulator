@@ -22,7 +22,7 @@ namespace GigE_Cam_Simulator.GVCP
                 var data = message.ReadBytes(4);
                 var register = BootstrapRegisterHelper.RegisterByAddress(address);
 
-                Console.WriteLine("  write: 0x" + address.ToString("X4") + " (" + register.Name + ") = " + string.Join(", ", data));
+                Console.WriteLine("write: 0x" + address.ToString("X4") + " (" + register.Name + ") = " + string.Join(", ", data));
 
                 registers.WriteBytes(address, data);
 

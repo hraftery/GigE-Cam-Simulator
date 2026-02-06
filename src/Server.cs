@@ -45,10 +45,10 @@
             registers.WriteIntBE(eBootstrapRegister.Version, 0x00020002); //2.2
 
             registers.WriteByte(eBootstrapRegister.Device_Mode, 0, 0b10000000);
-            //                                                  ||||||++---- 0: Single Link Configuration
-            //                                                  ||||++------ 0: Reserved
-            //                                                  |+++-------- 0: Transmitter
-            //                                                  +----------- 1: Big-endian device
+            //                                                       ||||||++---- 0: Single Link Configuration
+            //                                                       ||||++------ 0: Reserved
+            //                                                       |+++-------- 0: Transmitter
+            //                                                       +----------- 1: Big-endian device
             registers.WriteByte(eBootstrapRegister.Device_Mode, 1, 0); //Reserved
             registers.WriteByte(eBootstrapRegister.Device_Mode, 2, 0); //Reserved
             registers.WriteByte(eBootstrapRegister.Device_Mode, 3, 2); //ASCII character set
@@ -101,11 +101,11 @@
 
             // Physical Link
             registers.WriteByte(eBootstrapRegister.Physical_Link_Capability, 3, 0b00000001);
-            //                                                               |||||||+---- 1: Single Link supported
-            //                                                               ||||||+----- 0: Multiple Link not supported
-            //                                                               |||||+------ 0: Static LAG not supported
-            //                                                               ||||+------- 0: Dynamic LAG not supported
-            //                                                               ++++-------- 0: Reserved
+            //                                                                    |||||||+---- 1: Single Link supported
+            //                                                                    ||||||+----- 0: Multiple Link not supported
+            //                                                                    |||||+------ 0: Static LAG not supported
+            //                                                                    ||||+------- 0: Dynamic LAG not supported
+            //                                                                    ++++-------- 0: Reserved
             registers.WriteByte(eBootstrapRegister.Physical_Link_Configuration, 3, 0); //0: Single Link configuration
 
             //IEEE 1588 registers are optional. Control channel not supported. Primary Application and

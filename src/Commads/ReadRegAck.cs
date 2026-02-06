@@ -20,7 +20,7 @@ namespace GigE_Cam_Simulator.GVCP
             {
                 var address = message.ReadUIntBE();
                 var register = BootstrapRegisterHelper.RegisterByAddress(address);
-                Console.WriteLine("  read:  0x" + address.ToString("X4") + " (" + register.Name + ") = " + registers.ReadIntBE(address));
+                Console.WriteLine("read:  0x" + address.ToString("X4") + " (" + register.Name + ") = " + registers.ReadIntBE(address));
 
                 var data = registers.ReadBytes(address, 4);
                 resultData.WriteBytes(data, 4);
