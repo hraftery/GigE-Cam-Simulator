@@ -43,6 +43,20 @@
 		<register>Stream_Channel_Packet_Size_0</register>
 		<int>1080</int>
 	</property>
+	
+	<!-- // Manufacturer specific registers follow -->
+	<property>
+		<register>0x20003490</register>  <!-- // deviceManufacturerPartNumber  -->
+		<string>FAKECAM1234</string>
+	</property>
+	<property>
+		<register>0x18009320</register>  <!-- // DeviceManufacturerInfo  -->
+		<string>Simulated camera</string>
+	</property>
+	<property>
+		<register>0x180000E0</register>  <!-- // DeviceFirmwareVersion  -->
+		<string>v0.1f</string>			 <!-- // In a simulated device, the device version *is* the software version. Just add 'f' suffix.  -->
+	</property>
 	<property>
 		<register>0x20000060</register>  <!-- // Pixel Format  -->
 		<int>0x01080001</int>            <!-- // Mono8  -->
@@ -85,6 +99,21 @@
 	</property>
 ?>
 	<property>
+		<register>0x200000F0</register>  <!-- // SensorWidth  -->
+		<int>8192</int>
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x20000100</register>  <!-- // SensorHeight  -->
+		<int>1</int>
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x200001D0</register>  <!-- // AcquisitionLineRate  -->
+		<int>4000000</int>				 <!-- // In 0.001Hz -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
 		<register>0x20000090</register>  <!-- // Height  -->
 		<int>480</int>
 		<endianess>LittleEndian</endianess>
@@ -99,5 +128,54 @@
 		<int>16844800</int>
 		<endianess>LittleEndian</endianess>
 	</property>
-
+	<property>
+		<register>0x20000058</register>  <!-- // AcquisitionFrameCountMax  -->
+		<int>20</int>
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x20000E10</register>  <!-- // triggerFrameCount  -->
+		<int>1</int>					 <!-- // Must be in [1,4095]. -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x20000570</register>  <!-- // triggerLineCount  -->
+		<int>1</int>					 <!-- // Must be in [1,15]. -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x20000C20</register>  <!-- // lineTriggerInputFrequency  -->
+		<int>4294967295</int>			 <!-- // Seems to be stored as period in 10's of ns, so zero blows up. Pick UINT32_MAX. -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x08000000</register>  <!-- // UserSetDefaultSelector ("Power-up Configuration Selector")  -->
+		<int>6</int>					 <!-- // Factory Setting values  -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x200001B0</register>  <!-- // Camera Temperature / FPGA_Board. In degrees Celsius  -->
+		<int>35</int>
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x20000340</register>  <!-- // FlatfieldCalibrationSampleSizeReg  -->
+		<int>2048</int>					 <!-- // Lines_2048  -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x200032D0</register>  <!-- // cP_flatfieldCorrectionCurrentActiveSetReg ("current preset")  -->
+		<int>1</int>					 <!-- // User Flat Field 1  -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x20002EEC</register>  <!-- // Binning Horizontal  -->
+		<int>1</int>
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x20002EFC</register>  <!-- // Binning Veritical  -->
+		<int>1</int>
+		<endianess>LittleEndian</endianess>
+	</property>
 </memory>
