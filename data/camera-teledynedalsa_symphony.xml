@@ -6927,10 +6927,9 @@
          <pFeature>WidthMax</pFeature>
          <pFeature>HeightMax</pFeature>
          <pFeature>OffsetX</pFeature>
-		 <pFeature>OffsetY</pFeature>
          <pFeature>Width</pFeature>
          <pFeature>Height</pFeature>
-		 <pFeature>SaperaBufferFormat</pFeature>
+         <pFeature>SaperaBufferFormat</pFeature>
          <pFeature>multipleROIMode</pFeature>
          <pFeature>multipleROICountHorizontal</pFeature>
          <pFeature>multipleROISelector</pFeature>
@@ -7095,25 +7094,6 @@
          <Sign>Unsigned</Sign>
          <Endianess>LittleEndian</Endianess>
       </IntReg>
-	  <Integer Name="OffsetY" NameSpace="Standard">
-         <ToolTip>OffsetY from Sensor Origin</ToolTip>
-         <Description>PLACEHOLDER ONLY! Vertical offset from the Sensor Origin to the Area Of Interest (in pixels).</Description>
-         <DisplayName>Vertical Offset</DisplayName>
-         <Visibility>Beginner</Visibility>
-         <pIsLocked>TLParamsLocked</pIsLocked>
-         <Streamable>Yes</Streamable>
-         <pValue>pOffsetYReg</pValue>
-         <Min>0</Min>
-         <Max>1</Max>
-      </Integer>
-      <IntReg Name="pOffsetYReg">
-         <Address>0x20000084</Address>
-         <Length>4</Length>
-         <AccessMode>RW</AccessMode>
-         <pPort>Device</pPort>
-         <Sign>Unsigned</Sign>
-         <Endianess>BigEndian</Endianess>
-      </IntReg>
       <Integer Name="Height" NameSpace="Standard">
          <ToolTip>Height (in pixels) of the image</ToolTip>
          <Description>Height of the Image provided by the device (in lines).</Description>
@@ -7153,7 +7133,7 @@
          <Endianess>LittleEndian</Endianess>
       </IntReg>
 	  
-	  <Integer Name="SaperaBufferFormat" NameSpace="Standard">
+      <Integer Name="SaperaBufferFormat" NameSpace="Standard">
          <ToolTip>Sapera Buffer Format</ToolTip>
          <Description>Sapera Buffer Format.</Description>
          <DisplayName>SaperaBufferFormat</DisplayName>
