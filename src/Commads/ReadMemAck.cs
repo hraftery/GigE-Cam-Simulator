@@ -29,7 +29,7 @@ namespace GigE_Cam_Simulator.GVCP
             Console.WriteLine("  read:  0x" + address.ToString("X4") + " (" + register.Name + ") = " + ByteToString(resultData));
         }
 
-        public BufferReader ToBuffer()
+        public override BufferReader ToBuffer()
         {
             var b = CreateBuffer(4 + resultData.Length);
 

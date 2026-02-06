@@ -30,7 +30,7 @@ namespace GigE_Cam_Simulator.GVCP
             }
         }
 
-        public BufferReader ToBuffer()
+        public override BufferReader ToBuffer()
         {
             var b = CreateBuffer(4);
 

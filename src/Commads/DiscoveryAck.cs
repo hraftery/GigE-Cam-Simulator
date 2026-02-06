@@ -59,7 +59,7 @@
             user_defined_name       = registers.ReadString(eBootstrapRegister.User_defined_name);
         }
 
-        public BufferReader ToBuffer()
+        public override BufferReader ToBuffer()
         {
             var b = CreateBuffer(0x00f8);
 

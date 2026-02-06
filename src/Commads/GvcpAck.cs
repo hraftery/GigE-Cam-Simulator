@@ -58,7 +58,7 @@
     /// GigE Vision Command Package Header
     /// see: https://aravisproject.github.io/docs/aravis-0.4/aravis-gvcp.html
     /// </summary>
-    public class GvcpAck
+    public abstract class GvcpAck
     {
         public GvcpPacketType Type { get; }
         public ArvGvcpCommand Command { get; }
@@ -87,5 +87,7 @@
             return b;
 
         }
+
+        public abstract BufferReader ToBuffer();
     }
 }

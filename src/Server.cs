@@ -197,29 +197,24 @@
             var req_id = msg.ReadWordBE();
             var data = new BufferReader(msg.ReadBytes(length));
 
-            BufferReader? result = null;
-
+            GvcpAck? ack = null;
             switch (command)
             {
                 case PackageCommandType.DISCOVERY_CMD:
                     Console.WriteLine("DISCOVERY by: " + endpoint);
-                    var discovery = new DiscoveryAck(req_id, this.registers);
-                    result = discovery.ToBuffer();
+                    ack = new DiscoveryAck(req_id, this.registers);
                     break;
                 case PackageCommandType.READREG_CMD:
                     Console.Write(PadTo("READREG by: " + endpoint));
-                    var readReg = new ReadRegAck(req_id, this.registers, data);
-                    result = readReg.ToBuffer();
+                    ack = new ReadRegAck(req_id, this.registers, data);
                     break;
                 case PackageCommandType.READMEM_CMD:
                     Console.Write(PadTo("READMEM by: " + endpoint));
-                    var readMem = new ReadMemAck(req_id, this.registers, data);
-                    result = readMem.ToBuffer();
+                    ack = new ReadMemAck(req_id, this.registers, data);
                     break;
                 case PackageCommandType.WRITEREG_CMD:
                     Console.Write(PadTo("WRITEREG by: " + endpoint));
-                    var writeReg = new WriteRegAck(req_id, this.registers, data);
-                    result = writeReg.ToBuffer();
+                    ack = new WriteRegAck(req_id, this.registers, data);
                     break;
                     
                 default:
@@ -229,9 +224,12 @@
 
             server.BeginReceive(new AsyncCallback(this.IncomingMessage), server);
 
-            if (result != null)
+            //Only send back the ack if requested to do so. For historical reasons the
+            //ack object is always created, because that's where the command is processed.
+            if (ack != null && (flags & (byte)GvcpCommandFlag.ACKNOWLEDGE) != 0)
             {
-                server.Send(result.Buffer, result.Buffer.Length, endpoint);
+                BufferReader ackPacket = ack.ToBuffer();
+                server.Send(ackPacket.Buffer, ackPacket.Buffer.Length, endpoint);
             }
         }
 
