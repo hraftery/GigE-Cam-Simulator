@@ -67,7 +67,7 @@ namespace GigE_Cam_Simulator
                 if (mem.ReadIntBE(0x124) == 1)
                 {
                     Console.WriteLine("--- StartAcquisition");
-                    AcquisitionControl.StartAcquisition(100);
+                    AcquisitionControl.StartAcquisition(eAcquisitionMode.Continuous);
                 }
                 else
                 {
@@ -81,8 +81,7 @@ namespace GigE_Cam_Simulator
                 {
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
                     Console.WriteLine("--- StartAcquisition");
-                    //Note the parameter is currently ignored. It's just a one-shot, which happens to be just what we want.
-                    AcquisitionControl.StartAcquisition(0);
+                    AcquisitionControl.StartAcquisition(eAcquisitionMode.SingleFrame);
                 });
 
             //AcquisitionStop, at least in Teledyne DALSA Linea.

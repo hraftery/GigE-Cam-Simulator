@@ -3,6 +3,13 @@ using System.Threading;
 
 namespace GigE_Cam_Simulator
 {
+    //These are defined in GenICam Standard Features Naming Convention (SFNC)
+    public enum eAcquisitionMode
+    {
+        Continuous,     //Mandatory for GigE Vision cameras
+        SingleFrame,    
+        MultiFrame
+    }
 
     public static class AcquisitionControl
     {
@@ -10,63 +17,59 @@ namespace GigE_Cam_Simulator
         internal static Server? server;
         //Provide a callback is triggered when ever a new Image need to be acquired.
         public static Func<ImageData>? onAcquiesceImageCallback;
+        //Provide a frame rate for continuous/multi-frame mode. Does not affect an active acquisition.
+        public static uint interFramePeriodMilliseconds = 1000;
+        //Set to the number of frames to acquire in MultiFrame mode
+        public static uint acquisitionFrameCount = 10;
 
-        private static Timer? acquisitionTimer;
 
-        private static bool acquisitionRunning = false;
-        internal static void StartAcquisition(int interval)
+        //Use a long living timer and just start/rearm/stop it as required.
+        private static Timer acquisitionTimer = new Timer(AcquireFrame, null, Timeout.Infinite, Timeout.Infinite);
+        private static uint currentFrameCount;
+        private static bool stopAtFrameCount;
+        internal static void StartAcquisition(eAcquisitionMode mode)
         {
-            if (acquisitionTimer == null)
-            {
-                acquisitionTimer = new Timer(OnAcquisitionCallback, null, Timeout.Infinite, Timeout.Infinite);
-            }
+            currentFrameCount = 0;
 
-            //Now this can be called from a timer, provide a very simple throttling mechanism.
-            //If the last request hasn't completed, ignore any new requests.
-            if (!acquisitionRunning)
+            if (mode == eAcquisitionMode.Continuous || mode == eAcquisitionMode.MultiFrame)
             {
-                acquisitionRunning = true;
-                OnAcquisitionCallback(null);
-                acquisitionRunning = false;
+                acquisitionTimer.Change(interFramePeriodMilliseconds, interFramePeriodMilliseconds);
+                stopAtFrameCount = (mode == eAcquisitionMode.MultiFrame);
             }
+            
+            //Kick the first frame off right away.
+            AcquireFrame(null);
         }
 
-        private static void OnAcquisitionCallback(object? source)
+        private static bool frameAcquisitionInProgress = false;
+        private static void AcquireFrame(object? state)
         {
-            if (onAcquiesceImageCallback == null)
-            {
+            //Provide a very simple throttling mechanism. If the last
+            //frame acquisition hasn't completed, ignore any new requests.
+            //Also skip if a way to get a frame hasn't been provided.
+            if (frameAcquisitionInProgress || onAcquiesceImageCallback == null)
                 return;
-            }
+
+            frameAcquisitionInProgress = true;
 
             var imageData = onAcquiesceImageCallback();
             if (imageData == null)
-            {
-                return;
-            }
+                Console.WriteLine("!!! Could not acquire frame.");
+            else if(server == null)
+                Console.WriteLine("!!! No server available to send acquired frame.");
+            else
+                server.SendStreamPacket(imageData);
 
-            server?.SendStreamPacket(imageData);
+            currentFrameCount++;
+            if (stopAtFrameCount && currentFrameCount >= acquisitionFrameCount)
+                StopAcquisition();
 
-            return;
-
-            // enqueue next call
-            var timer = acquisitionTimer;
-            if (timer != null)
-            {
-                timer.Change(100, Timeout.Infinite);
-            }
-
+            frameAcquisitionInProgress = false;
         }
 
         public static void StopAcquisition()
         {
-            var timer = acquisitionTimer;
-            acquisitionTimer = null;
-            if (timer == null)
-            {
-                return;
-            }
-
-            timer.Change(Timeout.Infinite, Timeout.Infinite);
+            acquisitionTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
     }
 }
