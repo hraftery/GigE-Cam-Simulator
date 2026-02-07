@@ -21,10 +21,6 @@
         private UdpClient? server;
         private StreamClient streamClient = new StreamClient();
 
-        /// <summary>
-        /// Callback that is triggered when ever a new Image need to be acquire
-        /// </summary>
-        private Func<ImageData>? onAcquiesceImageCallback;
 
         public Server(string address, string camXmlFileName, RegisterConfig preSetMemory)
         {
@@ -131,10 +127,10 @@
             // The file can be large (eg. 600kB - ZIP support not implemented), so pick somewhere with clear air.
             const uint XML_FILE_ADDRESS = 0x01000000; //Spec says address must be aligned to 32-bit boundary.
             registers.WriteString(eBootstrapRegister.XML_Device_Description_File_First_URL,
-                "Local:camera.xml;" + ToHexString(XML_FILE_ADDRESS) + ";" + ToHexString((uint)this.xml.Length));
+                "Local:camera.xml;" + XML_FILE_ADDRESS.ToString("X") + ";" + xml.Length.ToString("X"));
             // If the first fails, the second is used. But we have no other option! So just try the same.
             registers.WriteString(eBootstrapRegister.XML_Device_Description_File_Second_URL,
-                "Local:camera.xml;" + ToHexString(XML_FILE_ADDRESS) + ";" + ToHexString((uint)this.xml.Length));
+                "Local:camera.xml;" + XML_FILE_ADDRESS.ToString("X") + ";" + xml.Length.ToString("X"));
             registers.WriteBytes(XML_FILE_ADDRESS, this.xml); //Store the file.
 
             //Finally, write memory.xml values over the top.
@@ -170,7 +166,7 @@
             return endpoint.Address.Equals(((IPEndPoint)server.Client.LocalEndPoint).Address);
         }
 
-        private string PadTo(string s)
+        private string PadRight(string s)
         {
             return s.PadRight(36);
         }
@@ -217,15 +213,15 @@
                     ack = new DiscoveryAck(req_id, this.registers);
                     break;
                 case PackageCommandType.READREG_CMD:
-                    Console.Write(PadTo("READREG by: " + endpoint));
+                    Console.Write(PadRight("READREG by: " + endpoint));
                     ack = new ReadRegAck(req_id, this.registers, data);
                     break;
                 case PackageCommandType.READMEM_CMD:
-                    Console.Write(PadTo("READMEM by: " + endpoint));
+                    Console.Write(PadRight("READMEM by: " + endpoint));
                     ack = new ReadMemAck(req_id, this.registers, data);
                     break;
                 case PackageCommandType.WRITEREG_CMD:
-                    Console.Write(PadTo("WRITEREG by: " + endpoint));
+                    Console.Write(PadRight("WRITEREG by: " + endpoint));
                     ack = new WriteRegAck(req_id, this.registers, data);
                     break;
                     
@@ -292,11 +288,6 @@
             return null;
         }
 
-        private string ToHexString(uint num)
-        {
-            return num.ToString("X");
-        }
-
         public Server(string camXmlFileName, RegisterConfig preSetMemory) :
             this("0.0.0.0", camXmlFileName, preSetMemory)
         {
@@ -345,72 +336,6 @@
         public void OnRegisterChanged(uint address, Action<RegisterMemory> callback)
         {
             this.registers.AddWriteRegisterHook(address, callback);
-        }
-
-        private Timer? acquisitionTimer;
-
-        private bool acquisitionRunning = false;
-        public void StartAcquisition(int interval)
-        {
-            if (this.acquisitionTimer == null)
-            {
-                this.acquisitionTimer = new Timer(OnAcquisitionCallback, null, Timeout.Infinite, Timeout.Infinite);
-            }
-
-            //Now this can be called from a timer, provide a very simple throttling mechanism.
-            //If the last request hasn't completed, ignore any new requests.
-            if (!acquisitionRunning)
-            {
-                acquisitionRunning = true;
-                OnAcquisitionCallback(null);
-                acquisitionRunning = false;
-            }
-        }
-
-        private void OnAcquisitionCallback(object? source)
-        {
-            if (this.onAcquiesceImageCallback == null)
-            {
-                return;
-            }
-
-            var imageData = this.onAcquiesceImageCallback();
-            if (imageData == null)
-            {
-                return;
-            }
-
-            SendStreamPacket(imageData);
-            
-            return;
-
-            // enqueue next call
-            var timer = this.acquisitionTimer;
-            if (timer != null)
-            {
-                timer.Change(100, Timeout.Infinite);
-            }
-          
-        }
-
-        public void StopAcquisition()
-        {
-            var timer = this.acquisitionTimer;
-            this.acquisitionTimer = null;
-            if (timer == null)
-            {
-                return;
-            }
-
-            timer.Change(Timeout.Infinite, Timeout.Infinite);
-        }
-
-        /// <summary>
-        /// Set callback for Image acquiring
-        /// </summary>
-        internal void OnAcquiesceImage(Func<ImageData> callback)
-        {
-            this.onAcquiesceImageCallback = callback;
         }
 
         //NULL data means send a test packet (arbitrary data of packet size)

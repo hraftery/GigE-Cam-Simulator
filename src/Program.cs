@@ -16,6 +16,7 @@ namespace GigE_Cam_Simulator
             var preSetMemory = new RegisterConfig(memoryXml);
 
             var server = new Server(cameraXml, preSetMemory);
+            var acquisitionControl = new AcquisitionControl();
 
 
             server.OnRegisterChanged(eBootstrapRegister.Stream_Channel_Packet_Size_0, (regMem) =>
@@ -66,12 +67,12 @@ namespace GigE_Cam_Simulator
                 if (mem.ReadIntBE(0x124) == 1)
                 {
                     Console.WriteLine("--- StartAcquisition");
-                    server.StartAcquisition(100);
+                    acquisitionControl.StartAcquisition(100, server);
                 }
                 else
                 {
                     Console.WriteLine("--- StopAcquisition");
-                    server.StopAcquisition();
+                    acquisitionControl.StopAcquisition();
                 }
             });
 
@@ -81,15 +82,15 @@ namespace GigE_Cam_Simulator
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
                     Console.WriteLine("--- StartAcquisition");
                     //Note the parameter is currently ignored. It's just a one-shot, which happens to be just what we want.
-                    server.StartAcquisition(0);
+                    acquisitionControl.StartAcquisition(0, server);
                 });
 
-            //AcquisitionStart, at least in Teledyne DALSA Linea.
+            //AcquisitionStop, at least in Teledyne DALSA Linea.
             server.OnRegisterChanged(0x12000370, (mem) =>
                 {
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
                     Console.WriteLine("--- StopAcquisition");
-                    server.StopAcquisition();
+                    acquisitionControl.StopAcquisition();
                 });
 
             //Very specific to a certain configuration (Timer1 drives line captures) of a certain camera (Teledyne
@@ -164,7 +165,7 @@ namespace GigE_Cam_Simulator
             Console.WriteLine("Loaded " + numValidImages.ToString() + " frame images.");
 
             var imageIndex = -1;
-            server.OnAcquiesceImage(() =>
+            acquisitionControl.OnAcquiesceImage(() =>
             {
                 imageIndex = (imageIndex+1) % numValidImages;
                 return imageData[imageIndex];
