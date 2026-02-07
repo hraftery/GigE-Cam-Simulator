@@ -46,15 +46,15 @@
             this.TriggerWriteHook(address);
         }
 
-        public uint ReadIntBE(uint address)
+        public uint ReadUIntBE(uint address)
         {
-            return data.GetIntBE(MapToLowAddress(address));
+            return data.GetUIntBE(MapToLowAddress(address));
         }
 
-        public uint ReadIntBE(eBootstrapRegister register)
+        public uint ReadUIntBE(eBootstrapRegister register)
         {
             var reg = BootstrapRegisterHelper.RegisterByEnum(register);
-            return data.GetIntBE(reg.Address);
+            return data.GetUIntBE(reg.Address);
         }
         public void WriteIntBE(eBootstrapRegister register, int value)
         {

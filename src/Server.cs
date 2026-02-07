@@ -343,8 +343,8 @@
         {
             var ipReg = registers.ReadBytes(eBootstrapRegister.Stream_Channel_Destination_Address_0);
             var ip = new IPAddress(ipReg);
-            var port = registers.ReadIntBE(eBootstrapRegister.Stream_Channel_Port_0);
-            var packetSizeReg = registers.ReadIntBE(eBootstrapRegister.Stream_Channel_Packet_Size_0);
+            var port = registers.ReadUIntBE(eBootstrapRegister.Stream_Channel_Port_0);
+            var packetSizeReg = registers.ReadUIntBE(eBootstrapRegister.Stream_Channel_Packet_Size_0);
             var packetSize = (uint)(packetSizeReg & 0xFFFF); //lower 16 bits is packet size
 
             if (data == null)

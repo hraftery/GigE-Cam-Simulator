@@ -35,17 +35,17 @@
         public DiscoveryAck(uint req_id, RegisterMemory registers) :
             base(req_id, GvcpPacketType.GVCP_PACKET_TYPE_ACK, ArvGvcpCommand.GVCP_COMMAND_DISCOVERY_ACK)
         {
-            uint version = registers.ReadIntBE(eBootstrapRegister.Version);
+            uint version = registers.ReadUIntBE(eBootstrapRegister.Version);
             VersionMajor            = (version >> 16) & 0xFFFF; //The version register stores major/minor in the same way the
             VersionMinor            = (version >>  0) & 0xFFFF; //ack writes it, but we split it apart for clarity anyway.
 
-            DeviceMode              = registers.ReadIntBE(eBootstrapRegister.Device_Mode);
+            DeviceMode              = registers.ReadUIntBE(eBootstrapRegister.Device_Mode);
 
             MacAddressHigh          = registers.ReadBytes(eBootstrapRegister.Device_MAC_address_High_Network_interface_0);
             MacAddressLow           = registers.ReadBytes(eBootstrapRegister.Device_MAC_address_Low_Network_interface_0);
 
-            ip_config_options       = registers.ReadIntBE(eBootstrapRegister.Network_interface_capability_0);
-            ip_config_current       = registers.ReadIntBE(eBootstrapRegister.Network_interface_configuration_0);
+            ip_config_options       = registers.ReadUIntBE(eBootstrapRegister.Network_interface_capability_0);
+            ip_config_current       = registers.ReadUIntBE(eBootstrapRegister.Network_interface_configuration_0);
 
             current_ip_buf          = registers.ReadBytes(eBootstrapRegister.Current_IP_address_Network_interface_0);
             current_subnet_mask_buf = registers.ReadBytes(eBootstrapRegister.Current_subnet_mask_Network_interface_0);

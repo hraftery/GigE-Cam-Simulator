@@ -6,9 +6,9 @@ namespace GigE_Cam_Simulator
     //These are defined in GenICam Standard Features Naming Convention (SFNC)
     public enum eAcquisitionMode
     {
-        Continuous,     //Mandatory for GigE Vision cameras
-        SingleFrame,    
-        MultiFrame
+        Continuous  = 0,    //Mandatory for GigE Vision cameras
+        SingleFrame = 1,    //Values seem typical, but not guaranteed.
+        MultiFrame  = 2
     }
 
     public static class AcquisitionThread
@@ -46,6 +46,15 @@ namespace GigE_Cam_Simulator
             theThread.Start();
         }
 
+        internal static void TriggerAcquisitionStart()
+        {
+            triggerAcquisitionStartFlag.Set();
+        }
+
+        internal static void TriggerFrameStart()
+        {
+            triggerFrameStartFlag.Set();
+        }
         internal static void StartAcquisition(eAcquisitionMode mode)
         {
             if(!theThread.IsAlive)

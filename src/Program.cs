@@ -55,7 +55,7 @@ namespace GigE_Cam_Simulator
                 //to specify that, unless we add config functionality and get the user to specify.
                 //So for now, use the Min/Max values hard-coded into the Teledyne DALSA Symphony camera.xml:
                 bool isSupportedPacketSize = true; //by default
-                var regVal = regMem.ReadIntBE(eBootstrapRegister.Stream_Channel_Packet_Size_0);
+                var regVal = regMem.ReadUIntBE(eBootstrapRegister.Stream_Channel_Packet_Size_0);
                 var packetSize = regVal & 0x0000FFFF;
                 var roundedPacketSize = Math.Max(512, Math.Min(packetSize, 9216)); //Min/Max for GevSCPSPacketSize
                 if(roundedPacketSize != packetSize)
@@ -87,7 +87,7 @@ namespace GigE_Cam_Simulator
             // on TriggerSoftware
             server.OnRegisterChanged(0x30c, (mem) =>
             {
-                if (mem.ReadIntBE(0x124) == 1)
+                if (mem.ReadUIntBE(0x124) == 1)
                 {
                     Console.WriteLine("--- StartAcquisition");
                     AcquisitionThread.StartAcquisition(eAcquisitionMode.Continuous);
@@ -100,11 +100,15 @@ namespace GigE_Cam_Simulator
             });
 
             //AcquisitionStart, at least in Teledyne DALSA Linea.
-            server.OnRegisterChanged(0x12000360, (mem) =>
+            server.OnRegisterChanged(0x12000360, (regMem) =>
                 {
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
                     Console.WriteLine("--- StartAcquisition");
-                    AcquisitionThread.StartAcquisition(eAcquisitionMode.SingleFrame);
+                    //Too hard to read from trigger settings from registers at the moment, and we don't support
+                    //LinetStart anyway (see Timer1 event comments below). So this setting is assumed.
+                    AcquisitionThread.triggerFrameStartModeOn = true;
+                    var acqMode = BinaryPrimitives.ReverseEndianness(regMem.ReadUIntBE(0x20000040));
+                    AcquisitionThread.StartAcquisition((eAcquisitionMode)acqMode);
                 });
 
             //AcquisitionStop, at least in Teledyne DALSA Linea.
@@ -115,6 +119,13 @@ namespace GigE_Cam_Simulator
                     AcquisitionThread.StopAcquisition();
                 });
 
+            //AcquisitionFrameCount (for MultiFrame AcquisitionMode), at least in Teledyne DALSA Linea.
+            server.OnRegisterChanged(0x20000050, (regMem) =>
+            {
+                var acquisitionFrameCount = BinaryPrimitives.ReverseEndianness(regMem.ReadUIntBE(0x20000050));
+                AcquisitionThread.acquisitionFrameCount = acquisitionFrameCount;
+            });
+            
             //Very specific to a certain configuration (Timer1 drives line captures) of a certain camera (Teledyne
             //DALSA Linea). Haven't figured out how to make it generic yet. The full timer implementation requires
             //a line/trigger implementation at least, and possible a counter implementation too. Tall order,
@@ -132,7 +143,7 @@ namespace GigE_Cam_Simulator
                     }
 
                     //The TimerActive register is typically little endian. But it doesn't matter, != 0 is != 0.
-                    if (regMem.ReadIntBE(0x20000450) != 0) //active
+                    if (regMem.ReadUIntBE(0x20000450) != 0) //active
                     {
                         if (timer1 != null && timer1.Enabled)
                             return; //timer is already active. Nothing else to do.
@@ -141,23 +152,19 @@ namespace GigE_Cam_Simulator
                         //take height number of timer ends to produce a frame. We further assume the client is only
                         //interested in EndOfFrame events, so don't do anything on end of line. Finally, we assume
                         //the timer end occurs after the timer delay and duration.
-                        var delay_us = BinaryPrimitives.ReverseEndianness(regMem.ReadIntBE(0x20000480));
-                        var duration_us = BinaryPrimitives.ReverseEndianness(regMem.ReadIntBE(0x200004A0));
-                        var height_lines = BinaryPrimitives.ReverseEndianness(regMem.ReadIntBE(0x20000090));
+                        var delay_us = BinaryPrimitives.ReverseEndianness(regMem.ReadUIntBE(0x20000480));
+                        var duration_us = BinaryPrimitives.ReverseEndianness(regMem.ReadUIntBE(0x200004A0));
+                        var height_lines = BinaryPrimitives.ReverseEndianness(regMem.ReadUIntBE(0x20000090));
                         var endOfTimer_ms = (delay_us + duration_us) * height_lines / 1000; //eg. 5000 lines at 100us per line = 500ms.
-                        endOfTimer_ms += 1500; //TODO: remove
-
+                        
                         timer1 = new Timer(endOfTimer_ms);
                         timer1.Elapsed += (sender, e) =>
                             {
-                                //Note, there's a possibility write triggers are disabled here because another register
-                                //write is happening in another thread. We'll miss a frame, but that's not worth
-                                //worrying about.
-                                regMem.WriteIntBE(0x12000360, 1); //AcquisitionStart
+                                AcquisitionThread.TriggerFrameStart();
 
                                 //By default the timer is looping (AutoReset is true). If the timerStartSource is not
                                 //Timer1End (25), then interrupt that and kill the timer.
-                                var timerStartSource = BinaryPrimitives.ReverseEndianness(regMem.ReadIntBE(0x20000460));
+                                var timerStartSource = BinaryPrimitives.ReverseEndianness(regMem.ReadUIntBE(0x20000460));
                                 if (timerStartSource != 25)
                                 {
                                     timer1.Stop();

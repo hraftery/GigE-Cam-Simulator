@@ -65,7 +65,7 @@
             return (b1 << 24 | b2 << 16 | b3 << 8 | b4);
         }
 
-        public uint GetIntBE(uint address)
+        public uint GetUIntBE(uint address)
         {
             uint b1 = this.buffer[address++];
             uint b2 = this.buffer[address++];
