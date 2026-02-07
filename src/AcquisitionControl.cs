@@ -4,21 +4,21 @@ using System.Threading;
 namespace GigE_Cam_Simulator
 {
 
-    public class AcquisitionControl
+    public static class AcquisitionControl
     {
-        /// <summary>
-        /// Callback that is triggered when ever a new Image need to be acquire
-        /// </summary>
-        private Func<ImageData>? onAcquiesceImageCallback;
+        //Reference to application server instance, so we can send acquired images
+        internal static Server? server;
+        //Provide a callback is triggered when ever a new Image need to be acquired.
+        public static Func<ImageData>? onAcquiesceImageCallback;
 
-        private Timer? acquisitionTimer;
+        private static Timer? acquisitionTimer;
 
-        private bool acquisitionRunning = false;
-        internal void StartAcquisition(int interval, Server server)
+        private static bool acquisitionRunning = false;
+        internal static void StartAcquisition(int interval)
         {
-            if (this.acquisitionTimer == null)
+            if (acquisitionTimer == null)
             {
-                this.acquisitionTimer = new Timer(OnAcquisitionCallback, null, Timeout.Infinite, Timeout.Infinite);
+                acquisitionTimer = new Timer(OnAcquisitionCallback, null, Timeout.Infinite, Timeout.Infinite);
             }
 
             //Now this can be called from a timer, provide a very simple throttling mechanism.
@@ -26,30 +26,30 @@ namespace GigE_Cam_Simulator
             if (!acquisitionRunning)
             {
                 acquisitionRunning = true;
-                OnAcquisitionCallback(server);
+                OnAcquisitionCallback(null);
                 acquisitionRunning = false;
             }
         }
 
-        private void OnAcquisitionCallback(object? server)
+        private static void OnAcquisitionCallback(object? source)
         {
-            if (this.onAcquiesceImageCallback == null)
+            if (onAcquiesceImageCallback == null)
             {
                 return;
             }
 
-            var imageData = this.onAcquiesceImageCallback();
+            var imageData = onAcquiesceImageCallback();
             if (imageData == null)
             {
                 return;
             }
 
-            ((Server)server!).SendStreamPacket(imageData);
+            server?.SendStreamPacket(imageData);
 
             return;
 
             // enqueue next call
-            var timer = this.acquisitionTimer;
+            var timer = acquisitionTimer;
             if (timer != null)
             {
                 timer.Change(100, Timeout.Infinite);
@@ -57,24 +57,16 @@ namespace GigE_Cam_Simulator
 
         }
 
-        public void StopAcquisition()
+        public static void StopAcquisition()
         {
-            var timer = this.acquisitionTimer;
-            this.acquisitionTimer = null;
+            var timer = acquisitionTimer;
+            acquisitionTimer = null;
             if (timer == null)
             {
                 return;
             }
 
             timer.Change(Timeout.Infinite, Timeout.Infinite);
-        }
-
-        /// <summary>
-        /// Set callback for Image acquiring
-        /// </summary>
-        internal void OnAcquiesceImage(Func<ImageData> callback)
-        {
-            this.onAcquiesceImageCallback = callback;
         }
     }
 }

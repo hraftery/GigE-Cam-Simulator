@@ -16,7 +16,7 @@ namespace GigE_Cam_Simulator
             var preSetMemory = new RegisterConfig(memoryXml);
 
             var server = new Server(cameraXml, preSetMemory);
-            var acquisitionControl = new AcquisitionControl();
+            AcquisitionControl.server = server;
 
 
             server.OnRegisterChanged(eBootstrapRegister.Stream_Channel_Packet_Size_0, (regMem) =>
@@ -67,12 +67,12 @@ namespace GigE_Cam_Simulator
                 if (mem.ReadIntBE(0x124) == 1)
                 {
                     Console.WriteLine("--- StartAcquisition");
-                    acquisitionControl.StartAcquisition(100, server);
+                    AcquisitionControl.StartAcquisition(100);
                 }
                 else
                 {
                     Console.WriteLine("--- StopAcquisition");
-                    acquisitionControl.StopAcquisition();
+                    AcquisitionControl.StopAcquisition();
                 }
             });
 
@@ -82,7 +82,7 @@ namespace GigE_Cam_Simulator
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
                     Console.WriteLine("--- StartAcquisition");
                     //Note the parameter is currently ignored. It's just a one-shot, which happens to be just what we want.
-                    acquisitionControl.StartAcquisition(0, server);
+                    AcquisitionControl.StartAcquisition(0);
                 });
 
             //AcquisitionStop, at least in Teledyne DALSA Linea.
@@ -90,7 +90,7 @@ namespace GigE_Cam_Simulator
                 {
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
                     Console.WriteLine("--- StopAcquisition");
-                    acquisitionControl.StopAcquisition();
+                    AcquisitionControl.StopAcquisition();
                 });
 
             //Very specific to a certain configuration (Timer1 drives line captures) of a certain camera (Teledyne
@@ -165,11 +165,11 @@ namespace GigE_Cam_Simulator
             Console.WriteLine("Loaded " + numValidImages.ToString() + " frame images.");
 
             var imageIndex = -1;
-            acquisitionControl.OnAcquiesceImage(() =>
-            {
-                imageIndex = (imageIndex+1) % numValidImages;
-                return imageData[imageIndex];
-            });
+            AcquisitionControl.onAcquiesceImageCallback = () =>
+                {
+                    imageIndex = (imageIndex+1) % numValidImages;
+                    return imageData[imageIndex];
+                };
 
             server.Run();
             var ipInfo = server.GetIpInfo();
