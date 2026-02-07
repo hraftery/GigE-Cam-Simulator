@@ -169,6 +169,11 @@
 		<endianess>LittleEndian</endianess>
 	</property>
 	<property>
+		<register>0x20000E60</register>  <!-- // flatfieldAlgorithmGainMax  -->
+		<int>409600</int>			     <!-- // Is converted to float by /4096 so this gives max of 100. Typical gain seems to be 7.5  -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
 		<register>0x20002EEC</register>  <!-- // Binning Horizontal  -->
 		<int>1</int>
 		<endianess>LittleEndian</endianess>
