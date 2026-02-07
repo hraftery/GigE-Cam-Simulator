@@ -127,7 +127,10 @@
         }
 
         /// <summary>
-        /// Register a callback that is triggered when data is written to a given address
+        /// Register a callback that is triggered when data is written to a given address.
+        /// Note hook addresses are not mapped to low addresses like register addresses are.
+        /// The choice is somewhat arbitrary, but there's no need to do so, so better to
+        /// leave it unaffected by the mapping so the features are decoupled.
         /// </summary>
         public void AddWriteRegisterHook(uint address, Action<RegisterMemory> callback)
         {

@@ -47,7 +47,7 @@
             var endpoint = new IPEndPoint(ip, (int)port);
             this.imageSendClient.DontFragment = doNotFragment;
 
-            Console.WriteLine("--- send: Lead to " + endpoint);
+            Console.WriteLine("--- send: Lead for " + data.Data.Length + " bytes to " + endpoint);
 
             try
             {
@@ -73,10 +73,6 @@
                 {
                     var payload = new DataPayload_ImageData(blockId, (uint)packetId);
                     var payloadLength = (uint)Math.Min(data.Data.Length - offset, chunkSize);
-                    if (payloadLength < chunkSize)
-                    {
-                        Console.WriteLine("?? " + payloadLength);
-                    }
                     var payloadPackage = payload.ToBuffer(data.Data, (int)offset, payloadLength);
                     this.imageSendClient.Send(payloadPackage.Buffer, payloadPackage.Buffer.Length, endpoint);
 
@@ -84,7 +80,7 @@
                     packetId++;
                 }
 
-                Console.WriteLine("--- send: trailer");
+                Console.WriteLine("--- send: Trailer with packetId: " + packetId);
 
                 // send trailer
                 var trailer = new DataTrailer_ImageData(blockId, (uint)packetId, (uint)data.Height);
