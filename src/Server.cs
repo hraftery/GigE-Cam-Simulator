@@ -349,6 +349,7 @@
 
         private Timer? acquisitionTimer;
 
+        private bool acquisitionRunning = false;
         public void StartAcquisition(int interval)
         {
             if (this.acquisitionTimer == null)
@@ -356,7 +357,14 @@
                 this.acquisitionTimer = new Timer(OnAcquisitionCallback, null, Timeout.Infinite, Timeout.Infinite);
             }
 
-            OnAcquisitionCallback(null);
+            //Now this can be called from a timer, provide a very simple throttling mechanism.
+            //If the last request hasn't completed, ignore any new requests.
+            if (!acquisitionRunning)
+            {
+                acquisitionRunning = true;
+                OnAcquisitionCallback(null);
+                acquisitionRunning = false;
+            }
         }
 
         private void OnAcquisitionCallback(object? source)
@@ -372,10 +380,8 @@
                 return;
             }
 
-            Console.WriteLine("--- >> send Image: start");
             SendStreamPacket(imageData);
-            Console.WriteLine("--- << send Image: end");
-
+            
             return;
 
             // enqueue next call

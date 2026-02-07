@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.IO;
+using System.Timers;
 
 namespace GigE_Cam_Simulator
 {
@@ -72,6 +74,77 @@ namespace GigE_Cam_Simulator
                     server.StopAcquisition();
                 }
             });
+
+            //AcquisitionStart, at least in Teledyne DALSA Linea.
+            server.OnRegisterChanged(0x12000360, (mem) =>
+                {
+                    //I think the value of the register doesn't matter. We just want to know when it is written too.
+                    Console.WriteLine("--- StartAcquisition");
+                    //Note the parameter is currently ignored. It's just a one-shot, which happens to be just what we want.
+                    server.StartAcquisition(0);
+                });
+
+            //AcquisitionStart, at least in Teledyne DALSA Linea.
+            server.OnRegisterChanged(0x12000370, (mem) =>
+                {
+                    //I think the value of the register doesn't matter. We just want to know when it is written too.
+                    Console.WriteLine("--- StopAcquisition");
+                    server.StopAcquisition();
+                });
+
+            //Very specific to a certain configuration (Timer1 drives line captures) of a certain camera (Teledyne
+            //DALSA Linea). Haven't figured out how to make it generic yet. The full timer implementation requires
+            //a line/trigger implementation at least, and possible a counter implementation too. Tall order,
+            //especially in software. So here we assume that if Timer1 is activated, the intent is to trigger an
+            //acquisition.
+            Timer? timer1 = null; //Note main() blocks forever so this wont go out of scope
+            server.OnRegisterChanged(0x20000450, (regMem) => //Timer1 TimerMode
+                {
+                    //Whether we're activating the timer or turning it off, we start by killing any active timer.
+                    //Then we either do nothing (if turning it off) or set up a new one (if activating it).
+                    if (timer1 != null && timer1.Enabled)
+                    {
+                        timer1.Stop();
+                        timer1.Dispose();
+                    }
+
+                    //The TimerActive register is typically little endian. But it doesn't matter, != 0 is != 0.
+                    if (regMem.ReadIntBE(0x20000450) != 0) //active
+                    {
+                        if (timer1 != null && timer1.Enabled)
+                            return; //timer is already active. Nothing else to do.
+
+                        //We'll assume the timer triggers LineStart acquisition on Timer1End. In that case it will
+                        //take height number of timer ends to produce a frame. We further assume the client is only
+                        //interested in EndOfFrame events, so don't do anything on end of line. Finally, we assume
+                        //the timer end occurs after the timer delay and duration.
+                        var delay_us = BinaryPrimitives.ReverseEndianness(regMem.ReadIntBE(0x20000480));
+                        var duration_us = BinaryPrimitives.ReverseEndianness(regMem.ReadIntBE(0x200004A0));
+                        var height_lines = BinaryPrimitives.ReverseEndianness(regMem.ReadIntBE(0x20000090));
+                        var endOfTimer_ms = (delay_us + duration_us) * height_lines / 1000; //eg. 5000 lines at 100us per line = 500ms.
+                        endOfTimer_ms += 1500; //TODO: remove
+
+                        timer1 = new Timer(endOfTimer_ms);
+                        timer1.Elapsed += (sender, e) =>
+                            {
+                                //Note, there's a possibility write triggers are disabled here because another register
+                                //write is happening in another thread. We'll miss a frame, but that's not worth
+                                //worrying about.
+                                regMem.WriteIntBE(0x12000360, 1); //AcquisitionStart
+
+                                //By default the timer is looping (AutoReset is true). If the timerStartSource is not
+                                //Timer1End (25), then interrupt that and kill the timer.
+                                var timerStartSource = BinaryPrimitives.ReverseEndianness(regMem.ReadIntBE(0x20000460));
+                                if (timerStartSource != 25)
+                                {
+                                    timer1.Stop();
+                                    timer1.Dispose();
+                                }
+                            };
+                        timer1.Start();
+                    }
+                });
+
 
             //The order returned is "not guaranteed" but always seems to be alphabetical. Getting a logical ordering
             //like used in any modern file browser doesn't look easy, or depends on Windows specific libraries.
