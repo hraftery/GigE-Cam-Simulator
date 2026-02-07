@@ -11,65 +11,134 @@ namespace GigE_Cam_Simulator
         MultiFrame
     }
 
-    public static class AcquisitionControl
+    public static class AcquisitionThread
     {
-        //Reference to application server instance, so we can send acquired images
-        internal static Server? server;
-        //Provide a callback is triggered when ever a new Image need to be acquired.
-        public static Func<ImageData>? onAcquiesceImageCallback;
-        //Provide a frame rate for continuous/multi-frame mode. Does not affect an active acquisition.
-        public static uint interFramePeriodMilliseconds = 1000;
         //Set to the number of frames to acquire in MultiFrame mode
-        public static uint acquisitionFrameCount = 10;
+        public static uint acquisitionFrameCount = 10; //As per GenICam standard
+        //Set to true to wait for a trigger before acquiring one or more frames
+        public static bool triggerAcquisitionStartModeOn = false; //As per GenICam standard
+        //Set to true to wait for a trigger before acquiring a frame
+        public static bool triggerFrameStartModeOn = false; //As per GenICam standard
 
+        //Specify a maximum frame rate for continuous/multi-frame mode.
+        public static uint minimumFramePeriodMilliseconds = 1000;
 
-        //Use a long living timer and just start/rearm/stop it as required.
-        private static Timer acquisitionTimer = new Timer(AcquireFrame, null, Timeout.Infinite, Timeout.Infinite);
+        //Reference to application server instance, so we can send acquired images
+        private static Server? server;
+        //Callback that is triggered when ever a new Image need to be acquired.
+        private static Func<ImageData>? onAcquiesceImageCallback;
+
+        private static Thread theThread = new Thread(ThreadFunc);
+        private static ManualResetEvent acquisitionStartFlag = new ManualResetEvent(false);
+        private static AutoResetEvent triggerAcquisitionStartFlag = new AutoResetEvent(false);
+        private static AutoResetEvent triggerFrameStartFlag = new AutoResetEvent(false);
+        private static bool resetThread = true;
+
+        private static eAcquisitionMode currentMode;
         private static uint currentFrameCount;
-        private static bool stopAtFrameCount;
+
+        internal static void Create(Server theServer, Func<ImageData> theAcquiesceImageCallback)
+        {
+            server = theServer;
+            onAcquiesceImageCallback = theAcquiesceImageCallback;
+
+            theThread.IsBackground = true; //Process can still end even if thread is running.
+            theThread.Start();
+        }
+
         internal static void StartAcquisition(eAcquisitionMode mode)
         {
-            currentFrameCount = 0;
-
-            if (mode == eAcquisitionMode.Continuous || mode == eAcquisitionMode.MultiFrame)
+            if(!theThread.IsAlive)
             {
-                acquisitionTimer.Change(interFramePeriodMilliseconds, interFramePeriodMilliseconds);
-                stopAtFrameCount = (mode == eAcquisitionMode.MultiFrame);
-            }
-            
-            //Kick the first frame off right away.
-            AcquireFrame(null);
-        }
-
-        private static bool frameAcquisitionInProgress = false;
-        private static void AcquireFrame(object? state)
-        {
-            //Provide a very simple throttling mechanism. If the last
-            //frame acquisition hasn't completed, ignore any new requests.
-            //Also skip if a way to get a frame hasn't been provided.
-            if (frameAcquisitionInProgress || onAcquiesceImageCallback == null)
+                Console.WriteLine("!!! Acquisition Thread Must be created first.");
                 return;
+            }
 
-            frameAcquisitionInProgress = true;
+            StopAcquisition(); //interrupt the current one, if any
 
-            var imageData = onAcquiesceImageCallback();
-            if (imageData == null)
-                Console.WriteLine("!!! Could not acquire frame.");
-            else if(server == null)
-                Console.WriteLine("!!! No server available to send acquired frame.");
-            else
-                server.SendStreamPacket(imageData);
+            currentFrameCount = 0;
+            currentMode = mode;
 
-            currentFrameCount++;
-            if (stopAtFrameCount && currentFrameCount >= acquisitionFrameCount)
-                StopAcquisition();
-
-            frameAcquisitionInProgress = false;
+            acquisitionStartFlag.Set();
         }
 
-        public static void StopAcquisition()
+        internal static void StopAcquisition()
         {
-            acquisitionTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            acquisitionStartFlag.Reset();
+            //Now force the thread loop to get back to the start
+            resetThread = true;
+            triggerAcquisitionStartFlag.Set();
+            triggerFrameStartFlag.Set();
         }
+
+        //
+        //           ThreadFunc Flow Chart
+        //
+        //                  (START)
+        //                     |_____________________
+        //                     |                     |
+        //            [Wait for StartAcq]            |
+        //                     |                     |
+        //    [Wait for Trigger: AcquisitionStart]   |
+        //                     |_____________________|______
+        //                     |                     |      |
+        //       [Wait for Trigger: FrameStart]      |      |
+        //                     |                     ^      |
+        //         [Acquire Frame, Transport]        |      |
+        //                     |                     |      |
+        //               /   Single  \               |      |
+        //              /      or     \______________|      ^
+        //              \  completed  /      Yes            |
+        //               \MultiFrame?/                      |
+        //                     |                            |
+        //       [Delay minimum frame period]               |
+        //                     |                            |
+        //                     |____________________________|
+        //
+        // Triggers are only waited on if they are enabled.
+        // And at any point, "StopAcquisition()" will return the thread to the top.
+        // To avoid gotos, this is done in one big loop, by checking for "resetThread" at
+        // every step. Steps are skipped based on "resetThread" to satisfy the diagram.
+
+
+        private static void ThreadFunc()
+        {
+            while (true)
+            {
+                if (resetThread)
+                {
+                    resetThread = false; //thread is now reset
+                    acquisitionStartFlag.WaitOne();
+
+                    if (!resetThread && triggerAcquisitionStartModeOn)
+                        triggerAcquisitionStartFlag.WaitOne();
+                }
+
+                if (!resetThread && triggerFrameStartModeOn)
+                    triggerFrameStartFlag.WaitOne();
+
+
+                if (!resetThread)
+                {
+                    var imageData = onAcquiesceImageCallback!();
+                    if (imageData == null)
+                    {
+                        Console.WriteLine("!!! Could not acquire frame.");
+                    }
+                    else
+                    {
+                        server!.SendStreamPacket(imageData);
+                        currentFrameCount++;
+                        if (currentMode == eAcquisitionMode.SingleFrame ||
+                            (currentMode == eAcquisitionMode.MultiFrame && currentFrameCount >= acquisitionFrameCount))
+                            StopAcquisition();
+                    }
+                }
+
+                if (!resetThread)
+                    Thread.Sleep((int)minimumFramePeriodMilliseconds); //TODO: rename to "minimum" period
+            }
+        }
+
     }
 }

@@ -13,10 +13,33 @@ namespace GigE_Cam_Simulator
             var cameraXml = Path.Combine(dataPath, "camera.xml");
             var memoryXml = Path.Combine(dataPath, "memory.xml");
 
-            var preSetMemory = new RegisterConfig(memoryXml);
+            //The order returned is "not guaranteed" but always seems to be alphabetical. Getting a logical ordering
+            //like used in any modern file browser doesn't look easy, or depends on Windows specific libraries.
+            //Ref: https://learn.microsoft.com/en-us/windows/win32/api/shlwapi/nf-shlwapi-strcmplogicalw
+            //So make do with alphabetical and user can just zero pad the frame number (frame01, frame02, etc.).
+            string[] imageFiles = Directory.GetFiles(dataPath, "frame*");
+            var imageData = new ImageData[imageFiles.Length];
 
+            var numValidImages = 0;
+            foreach (var imageFile in imageFiles)
+            {
+                //Console.WriteLine("Processing: " + imageFile);
+                var theData = ImageData.FromFile(imageFile);
+                if (theData != null)
+                    imageData[numValidImages++] = theData;
+            }
+            Console.WriteLine("Loaded " + numValidImages.ToString() + " frame images.");
+
+
+            var preSetMemory = new RegisterConfig(memoryXml);
             var server = new Server(cameraXml, preSetMemory);
-            AcquisitionControl.server = server;
+            var imageIndex = -1;
+            AcquisitionThread.Create(server, () =>
+                {
+                    imageIndex = (imageIndex + 1) % numValidImages;
+                    return imageData[imageIndex];
+                });
+
 
 
             server.OnRegisterChanged(eBootstrapRegister.Stream_Channel_Packet_Size_0, (regMem) =>
@@ -67,12 +90,12 @@ namespace GigE_Cam_Simulator
                 if (mem.ReadIntBE(0x124) == 1)
                 {
                     Console.WriteLine("--- StartAcquisition");
-                    AcquisitionControl.StartAcquisition(eAcquisitionMode.Continuous);
+                    AcquisitionThread.StartAcquisition(eAcquisitionMode.Continuous);
                 }
                 else
                 {
                     Console.WriteLine("--- StopAcquisition");
-                    AcquisitionControl.StopAcquisition();
+                    AcquisitionThread.StopAcquisition();
                 }
             });
 
@@ -81,7 +104,7 @@ namespace GigE_Cam_Simulator
                 {
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
                     Console.WriteLine("--- StartAcquisition");
-                    AcquisitionControl.StartAcquisition(eAcquisitionMode.SingleFrame);
+                    AcquisitionThread.StartAcquisition(eAcquisitionMode.SingleFrame);
                 });
 
             //AcquisitionStop, at least in Teledyne DALSA Linea.
@@ -89,7 +112,7 @@ namespace GigE_Cam_Simulator
                 {
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
                     Console.WriteLine("--- StopAcquisition");
-                    AcquisitionControl.StopAcquisition();
+                    AcquisitionThread.StopAcquisition();
                 });
 
             //Very specific to a certain configuration (Timer1 drives line captures) of a certain camera (Teledyne
@@ -145,30 +168,6 @@ namespace GigE_Cam_Simulator
                     }
                 });
 
-
-            //The order returned is "not guaranteed" but always seems to be alphabetical. Getting a logical ordering
-            //like used in any modern file browser doesn't look easy, or depends on Windows specific libraries.
-            //Ref: https://learn.microsoft.com/en-us/windows/win32/api/shlwapi/nf-shlwapi-strcmplogicalw
-            //So make do with alphabetical and user can just zero pad the frame number (frame01, frame02, etc.).
-            string[] imageFiles = Directory.GetFiles(dataPath, "frame*");
-            var imageData = new ImageData[imageFiles.Length];
-
-            var numValidImages = 0;
-            foreach (var imageFile in imageFiles)
-            {
-                //Console.WriteLine("Processing: " + imageFile);
-                var theData = ImageData.FromFile(imageFile);
-                if (theData != null)
-                    imageData[numValidImages++] = theData;
-            }
-            Console.WriteLine("Loaded " + numValidImages.ToString() + " frame images.");
-
-            var imageIndex = -1;
-            AcquisitionControl.onAcquiesceImageCallback = () =>
-                {
-                    imageIndex = (imageIndex+1) % numValidImages;
-                    return imageData[imageIndex];
-                };
 
             server.Run();
             var ipInfo = server.GetIpInfo();
