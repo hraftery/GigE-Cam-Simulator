@@ -33,6 +33,8 @@ namespace GigE_Cam_Simulator
         private static AutoResetEvent triggerAcquisitionStartFlag = new AutoResetEvent(false);
         private static AutoResetEvent triggerFrameStartFlag = new AutoResetEvent(false);
         private static bool resetThread = true;
+        //Small efficiency improvement - only need to stop before start if we haven't stopped the last start already.
+        private static bool startWithoutAStop = false;
 
         private static eAcquisitionMode currentMode;
         private static uint currentFrameCount;
@@ -63,21 +65,26 @@ namespace GigE_Cam_Simulator
                 return;
             }
 
-            StopAcquisition(); //interrupt the current one, if any
+            if(startWithoutAStop)
+                StopAcquisition(); //interrupt the current one
 
             currentFrameCount = 0;
             currentMode = mode;
+            startWithoutAStop = true;
 
+            Console.WriteLine("--- StartAcquisition");
             acquisitionStartFlag.Set();
         }
 
         internal static void StopAcquisition()
         {
+            Console.WriteLine("--- StopAcquisition");
             acquisitionStartFlag.Reset();
             //Now force the thread loop to get back to the start
             resetThread = true;
             triggerAcquisitionStartFlag.Set();
             triggerFrameStartFlag.Set();
+            startWithoutAStop = false;
         }
 
         //
@@ -116,6 +123,8 @@ namespace GigE_Cam_Simulator
             {
                 if (resetThread)
                 {
+                    triggerAcquisitionStartFlag.Reset();
+                    triggerFrameStartFlag.Reset();
                     resetThread = false; //thread is now reset
                     acquisitionStartFlag.WaitOne();
 

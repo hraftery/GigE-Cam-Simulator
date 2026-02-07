@@ -88,22 +88,16 @@ namespace GigE_Cam_Simulator
             server.OnRegisterChanged(0x30c, (mem) =>
             {
                 if (mem.ReadUIntBE(0x124) == 1)
-                {
-                    Console.WriteLine("--- StartAcquisition");
                     AcquisitionThread.StartAcquisition(eAcquisitionMode.Continuous);
-                }
                 else
-                {
-                    Console.WriteLine("--- StopAcquisition");
                     AcquisitionThread.StopAcquisition();
-                }
             });
 
             //AcquisitionStart, at least in Teledyne DALSA Linea.
             server.OnRegisterChanged(0x12000360, (regMem) =>
                 {
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
-                    Console.WriteLine("--- StartAcquisition");
+                    
                     //Too hard to read from trigger settings from registers at the moment, and we don't support
                     //LinetStart anyway (see Timer1 event comments below). So this setting is assumed.
                     AcquisitionThread.triggerFrameStartModeOn = true;
@@ -115,7 +109,6 @@ namespace GigE_Cam_Simulator
             server.OnRegisterChanged(0x12000370, (mem) =>
                 {
                     //I think the value of the register doesn't matter. We just want to know when it is written too.
-                    Console.WriteLine("--- StopAcquisition");
                     AcquisitionThread.StopAcquisition();
                 });
 
