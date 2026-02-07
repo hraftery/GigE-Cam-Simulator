@@ -1,4 +1,5 @@
 <memory>
+	<!-- // Bootstrap Registers first -->
 	<property>
 		<register>Manufacturer_name</register>
 		<string>Teledyne</string>
@@ -98,6 +99,7 @@
 		<endianess>LittleEndian</endianess>
 	</property>
 ?>
+
 	<property>
 		<register>0x200000F0</register>  <!-- // SensorWidth  -->
 		<int>8192</int>
