@@ -13,12 +13,12 @@ namespace GigE_Cam_Simulator
 
     public static class AcquisitionThread
     {
-        //Set to the number of frames to acquire in MultiFrame mode
-        public static uint acquisitionFrameCount = 10; //As per GenICam standard
-        //Set to true to wait for a trigger before acquiring one or more frames
-        public static bool triggerAcquisitionStartModeOn = false; //As per GenICam standard
-        //Set to true to wait for a trigger before acquiring a frame
-        public static bool triggerFrameStartModeOn = false; //As per GenICam standard
+        //As per GenICam standard. Set to the number of frames to acquire in MultiFrame mode.
+        public static uint acquisitionFrameCount = 10; //Initial value is arbitrary.
+        //As per GenICam standard. Set to true to wait for a trigger before acquiring one or more frames.
+        public static bool triggerAcquisitionStartModeOn = false; //Start off.
+        //As per GenICam standard. Set to true to wait for a trigger before acquiring a frame.
+        public static bool triggerFrameStartModeOn = false; //Start off.
 
         //Specify a maximum frame rate for continuous/multi-frame mode.
         public static uint minimumFramePeriodMilliseconds = 1000;
@@ -28,10 +28,10 @@ namespace GigE_Cam_Simulator
         //Callback that is triggered when ever a new Image need to be acquired.
         private static Func<ImageData>? onAcquiesceImageCallback;
 
-        private static Thread theThread = new Thread(ThreadFunc);
-        private static ManualResetEvent acquisitionStartFlag = new ManualResetEvent(false);
-        private static AutoResetEvent triggerAcquisitionStartFlag = new AutoResetEvent(false);
-        private static AutoResetEvent triggerFrameStartFlag = new AutoResetEvent(false);
+        private static readonly Thread theThread = new(ThreadFunc);
+        private static ManualResetEvent acquisitionStartFlag        = new(false);
+        private static AutoResetEvent triggerAcquisitionStartFlag   = new(false);
+        private static AutoResetEvent triggerFrameStartFlag         = new(false);
         private static bool resetThread = true;
         //Small efficiency improvement - only need to stop before start if we haven't stopped the last start already.
         private static bool startWithoutAStop = false;
@@ -115,8 +115,6 @@ namespace GigE_Cam_Simulator
         // And at any point, "StopAcquisition()" will return the thread to the top.
         // To avoid gotos, this is done in one big loop, by checking for "resetThread" at
         // every step. Steps are skipped based on "resetThread" to satisfy the diagram.
-
-
         private static void ThreadFunc()
         {
             while (true)
@@ -154,9 +152,8 @@ namespace GigE_Cam_Simulator
                 }
 
                 if (!resetThread)
-                    Thread.Sleep((int)minimumFramePeriodMilliseconds); //TODO: rename to "minimum" period
+                    Thread.Sleep((int)minimumFramePeriodMilliseconds);
             }
         }
-
     }
 }
