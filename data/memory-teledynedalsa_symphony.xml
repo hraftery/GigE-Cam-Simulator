@@ -171,8 +171,13 @@
 		<endianess>LittleEndian</endianess>
 	</property>
 	<property>
-		<register>0x20000E60</register>  <!-- // flatfieldAlgorithmGainMax  -->
+		<register>0x20000E68</register>  <!-- // flatfieldAlgorithmGainMax = 0x20000E60 + 4 * REG_MAX_INDEX  -->
 		<int>409600</int>			     <!-- // Is converted to float by /4096 so this gives max of 100. Typical gain seems to be 7.5  -->
+		<endianess>LittleEndian</endianess>
+	</property>
+	<property>
+		<register>0x20000278</register>  <!-- // gainRawMax = 0x20000270 + 4 * REG_MAX_INDEX  -->
+		<int>409600</int>			     <!-- // Same as flatfieldAlgorithmGainMax -->
 		<endianess>LittleEndian</endianess>
 	</property>
 	<property>
